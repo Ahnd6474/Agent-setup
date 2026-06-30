@@ -1,0 +1,13 @@
+[project]
+name = "exo-tools"
+version = "0.1.0"
+description = "Shared tooling for interacting with exo clusters"
+requires-python = ">=3.13"
+dependencies = ["loguru>=0.7.3", "fastapi>=0.116.1", "uvicorn>=0.35.0"]
+
+[project.scripts]
+agent-server = "exo_tools.agent_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

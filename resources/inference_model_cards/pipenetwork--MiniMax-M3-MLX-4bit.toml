@@ -1,0 +1,23 @@
+model_id = "pipenetwork/MiniMax-M3-MLX-4bit"
+n_layers = 60
+hidden_size = 6144
+num_key_value_heads = 4
+supports_tensor = true
+tasks = ["TextGeneration"]
+family = "minimax"
+quantization = "4bit"
+base_model = "MiniMax M3"
+capabilities = ["text", "thinking", "thinking_toggle"]
+reasoning_dialect = "post_last_user"
+context_length = 1048576
+backends = ["MlxMetal", "MlxCuda", "MlxCpu"]
+[storage_size]
+in_bytes = 239623726892
+
+# Source: https://huggingface.co/pipenetwork/MiniMax-M3-MLX-4bit
+# Source: https://huggingface.co/MiniMaxAI/MiniMax-M3/blob/main/config.json
+[sampling_defaults]
+temperature = 1.0
+top_p = 0.95
+top_k = 40
+
