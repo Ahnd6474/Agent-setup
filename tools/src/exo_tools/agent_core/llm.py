@@ -8,7 +8,7 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterator
 
 
 @dataclass
@@ -57,6 +57,49 @@ class LLMClient:
             raise RuntimeError(f"LLM HTTP {e.code}: {body}") from e
 
         return self._extract_content(data)
+
+    def complete_stream(self, messages: list[dict[str, str]], *, temperature: float = 0.2) -> Iterator[str]:
+        url = self.config.base_url.rstrip("/") + "/chat/completions"
+        payload = {
+            "model": self.config.model,
+            "messages": messages,
+            "temperature": temperature,
+            "stream": True,
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.config.api_key}",
+            },
+            method="POST",
+        )
+        try:
+            resp = urllib.request.urlopen(req, timeout=self.config.timeout_s)
+            with resp:
+                for line in resp:
+                    line = line.decode("utf-8").strip()
+                    if not line:
+                        continue
+                    if line.startswith("data: "):
+                        data_str = line[6:]
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            data = json.loads(data_str)
+                            choices = data.get("choices") or []
+                            if choices:
+                                delta = choices[0].get("delta") or {}
+                                content = delta.get("content")
+                                if content:
+                                    yield content
+                        except Exception:
+                            continue
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")[:500]
+            raise RuntimeError(f"LLM HTTP {e.code}: {body}") from e
+
 
     def backend_info(self) -> dict[str, object]:
         return {

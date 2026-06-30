@@ -6,7 +6,7 @@ from __future__ import annotations
 import contextlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from .environment import EnvironmentManager
 from .llm import LLMClient
@@ -62,6 +62,21 @@ class AgentRunner:
         self.store.append_message(session_id, Message(role="assistant", content=response), commit=False)
         self.store.commit(f"chat turn {session_id}")
         return response
+
+    def chat_stream(self, session_id: str, message: str, *, context: dict[str, Any] | None = None) -> Iterator[str]:
+        self.store.append_message(session_id, Message(role="user", content=message), commit=False)
+        messages = [
+            {"role": "system", "content": CHAT_SYSTEM_PROMPT + "\nContext:\n" + json.dumps(context or {}, ensure_ascii=False)},
+            {"role": "user", "content": message},
+        ]
+        full_response = []
+        for chunk in self.llm.complete_stream(messages):
+            full_response.append(chunk)
+            yield chunk
+        response_str = "".join(full_response)
+        self.store.append_message(session_id, Message(role="assistant", content=response_str), commit=False)
+        self.store.commit(f"chat turn {session_id}")
+
 
     def run_coding(
         self,

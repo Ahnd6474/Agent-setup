@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from exo_tools.agent_core import AgentRunner, AgentStore
@@ -38,13 +38,18 @@ class RestoreRunRequest(BaseModel):
     target_dir: str
 
 
-UI_HTML = """<!doctype html>
+UI_HTML = r"""<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Agentic Local Server</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
   <style>
+
     :root {
       color-scheme: light;
       --bg: #ffffff;
@@ -342,6 +347,116 @@ UI_HTML = """<!doctype html>
       padding: 10px 24px 22px;
       background: linear-gradient(to top, #fff 78%, rgba(255,255,255,0));
     }
+    .attachments-preview {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 8px 4px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 4px;
+    }
+    .attachment-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--text);
+      max-width: 200px;
+    }
+    .attachment-pill span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .attachment-pill img {
+      width: 20px;
+      height: 20px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .attachment-pill .remove-attachment {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--muted);
+      margin-left: 2px;
+    }
+    .attachment-pill .remove-attachment:hover {
+      color: var(--danger);
+    }
+    .msg-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .msg-attachment-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .msg-attachment-pill:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+    .msg-attachment-pill img {
+      max-width: 120px;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: currentColor;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .msg-body table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 8px 0;
+    }
+    .msg-body th, .msg-body td {
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .msg-body th {
+      background: var(--soft);
+      font-weight: 600;
+    }
+    .msg-body ul, .msg-body ol {
+      margin: 6px 0;
+      padding-left: 20px;
+    }
+    .msg-body p {
+      margin: 6px 0;
+    }
+    .msg-body pre {
+      background: #1e1e24 !important;
+      color: #e3e3e3 !important;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
     .composer {
       width: min(780px, 100%);
       display: grid;
@@ -573,7 +688,9 @@ UI_HTML = """<!doctype html>
             <button class="chip" data-prompt="Mac mini LLM 구성에서 다음 점검 항목을 알려줘">클러스터 점검</button>
           </div>
           <div class="composer">
-            <button class="round-btn" id="title-focus-2" title="New session">＋</button>
+            <div id="composer-attachments" class="attachments-preview hidden"></div>
+            <button class="round-btn" id="attach-btn" title="파일 및 사진 첨부">＋</button>
+            <input type="file" id="file-input" style="display: none;" multiple>
             <textarea id="message" placeholder="무엇이든 물어보세요"></textarea>
             <div class="mode-tabs">
               <button class="tab active" data-tab="chat">Chat</button>
@@ -632,9 +749,103 @@ UI_HTML = """<!doctype html>
       }
     }
 
+    let selectedFiles = [];
+
+    function escapeHtml(text) {
+      return (text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderMarkdownAndMath(text, element) {
+      if (!text) {
+        element.innerHTML = "";
+        return;
+      }
+      
+      const mathBlocks = [];
+      
+      // Protect display math $$ ... $$
+      text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
+        const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ id, math, display: true });
+        return id;
+      });
+
+      // Protect inline math $ ... $
+      text = text.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
+        const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ id, math, display: false });
+        return id;
+      });
+
+      // Protect inline math \( ... \)
+      text = text.replace(/\\\(([\s\S]+?)\\\)/g, (match, math) => {
+        const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ id, math, display: false });
+        return id;
+      });
+
+      // Protect display math \[ ... \]
+      text = text.replace(/\\\[([\s\S]+?)\\\]/g, (match, math) => {
+        const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ id, math, display: true });
+        return id;
+      });
+
+      // Parse markdown
+      let html = "";
+      try {
+        html = marked.parse(text);
+      } catch (e) {
+        html = escapeHtml(text);
+      }
+
+      // Restore and render math using KaTeX
+      for (const block of mathBlocks) {
+        let renderedMath = "";
+        try {
+          renderedMath = katex.renderToString(block.math, {
+            displayMode: block.display,
+            throwOnError: false
+          });
+        } catch (e) {
+          renderedMath = escapeHtml(block.math);
+        }
+        html = html.replace(block.id, renderedMath);
+      }
+
+      element.innerHTML = html;
+    }
+
+    function cleanUserMessageAndExtractAttachments(content) {
+      let cleaned = content;
+      const attachments = [];
+      
+      // Extract file attachment blocks
+      const fileRegex = /--- File Attachment: (.*?) ---\n([\s\S]*?)\n--- End File ---/g;
+      let match;
+      while ((match = fileRegex.exec(content)) !== null) {
+        attachments.push({ name: match[1], type: 'text/plain', previewText: match[2].slice(0, 100) });
+      }
+      cleaned = cleaned.replace(fileRegex, "").trim();
+
+      // Extract image blocks
+      const imgRegex = /\[Attached Image: (.*?)\]/g;
+      while ((match = imgRegex.exec(content)) !== null) {
+        attachments.push({ name: match[1], type: 'image/jpeg' });
+      }
+      cleaned = cleaned.replace(imgRegex, "").trim();
+
+      return { text: cleaned, attachments };
+    }
+
     function parseChat(md) {
       const chunks = [];
-      const lines = md.split("\\n");
+      const lines = md.split("\n");
       let current = null;
       for (const line of lines) {
         const normalized = line.toLowerCase();
@@ -645,7 +856,7 @@ UI_HTML = """<!doctype html>
           current = { role: "assistant", content: "" };
           chunks.push(current);
         } else if (current && !line.startsWith("# ")) {
-          current.content += (current.content ? "\\n" : "") + line;
+          current.content += (current.content ? "\n" : "") + line;
         }
       }
       return chunks.map((item) => ({ ...item, content: item.content.trim() })).filter((item) => item.content);
@@ -664,7 +875,28 @@ UI_HTML = """<!doctype html>
         role.textContent = msg.role;
         const body = document.createElement("div");
         body.className = "msg-body";
-        body.textContent = msg.content;
+        
+        if (msg.role === "user") {
+          const { text, attachments } = cleanUserMessageAndExtractAttachments(msg.content);
+          body.textContent = text;
+          
+          if (attachments.length > 0) {
+            const attachContainer = document.createElement("div");
+            attachContainer.className = "msg-attachments";
+            attachments.forEach(file => {
+              const pill = document.createElement("div");
+              pill.className = "msg-attachment-pill";
+              pill.textContent = `📎 ${file.name}`;
+              if (file.previewText) {
+                pill.title = file.previewText + "...";
+              }
+              attachContainer.appendChild(pill);
+            });
+            body.appendChild(attachContainer);
+          }
+        } else {
+          renderMarkdownAndMath(msg.content, body);
+        }
         item.append(role, body);
         log.appendChild(item);
       }
@@ -712,18 +944,107 @@ UI_HTML = """<!doctype html>
     async function sendMessage() {
       if (!state.sessionId) await createSession();
       const message = $("message").value.trim();
-      if (!message) return;
+      if (!message && selectedFiles.length === 0) return;
+      
+      let fullMessage = message;
+      if (selectedFiles.length > 0) {
+        fullMessage += "\n\n";
+        selectedFiles.forEach(file => {
+          if (file.content) {
+            fullMessage += `--- File Attachment: ${file.name} ---\n${file.content}\n--- End File ---\n\n`;
+          } else {
+            fullMessage += `[Attached Image: ${file.name}]\n`;
+          }
+        });
+      }
+
       $("message").value = "";
+      const currentAttachments = [...selectedFiles];
+      selectedFiles = [];
+      renderAttachmentPreview();
+
+      const log = $("chatlog");
+      $("welcome").classList.add("hidden");
+      $("quick-actions").classList.add("hidden");
+      log.classList.remove("hidden");
+
+      const userItem = document.createElement("div");
+      userItem.className = "msg user";
+      const userRole = document.createElement("div");
+      userRole.className = "msg-role";
+      userRole.textContent = "user";
+      const userBody = document.createElement("div");
+      userBody.className = "msg-body";
+      userBody.textContent = message;
+      
+      if (currentAttachments.length > 0) {
+        const attachContainer = document.createElement("div");
+        attachContainer.className = "msg-attachments";
+        currentAttachments.forEach(file => {
+          const pill = document.createElement("div");
+          pill.className = "msg-attachment-pill";
+          pill.textContent = `📎 ${file.name}`;
+          attachContainer.appendChild(pill);
+        });
+        userBody.appendChild(attachContainer);
+      }
+      userItem.append(userRole, userBody);
+      log.appendChild(userItem);
+
+      const assistantItem = document.createElement("div");
+      assistantItem.className = "msg assistant";
+      const assistantRole = document.createElement("div");
+      assistantRole.className = "msg-role";
+      assistantRole.textContent = "assistant";
+      const assistantBody = document.createElement("div");
+      assistantBody.className = "msg-body";
+      assistantBody.innerHTML = `<span class="cursor"></span>`;
+      assistantItem.append(assistantRole, assistantBody);
+      log.appendChild(assistantItem);
+
+      $("chat-pane").scrollTop = $("chat-pane").scrollHeight;
+
       setBusy(true);
       setStatus("generating");
-      await api(`/sessions/${state.sessionId}/messages`, {
-        method: "POST",
-        body: JSON.stringify({ message, context: { ui: true } }),
-      });
-      await selectSession(state.sessionId);
-      setStatus("ready");
-      setBusy(false);
+
+      try {
+        const response = await fetch(`/sessions/${state.sessionId}/messages/stream`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: fullMessage, context: { ui: true } }),
+        });
+
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let responseText = "";
+
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            responseText += decoder.decode(value, { stream: !done });
+            renderMarkdownAndMath(responseText, assistantBody);
+            if (!done) {
+              assistantBody.innerHTML += `<span class="cursor"></span>`;
+            }
+            $("chat-pane").scrollTop = $("chat-pane").scrollHeight;
+          }
+        }
+      } catch (e) {
+        setStatus(e.message, true);
+        assistantBody.textContent = "에러 발생: " + e.message;
+      } finally {
+        await selectSession(state.sessionId);
+        setStatus("ready");
+        setBusy(false);
+      }
     }
+
 
     async function runAgent() {
       if (!state.sessionId) await createSession();
@@ -763,7 +1084,84 @@ UI_HTML = """<!doctype html>
     $("send").onclick = () => sendMessage().catch((e) => setStatus(e.message, true));
     $("run").onclick = () => runAgent().catch((e) => setStatus(e.message, true));
     $("title-focus").onclick = () => $("message").focus();
-    $("title-focus-2").onclick = () => createSession().catch((e) => setStatus(e.message, true));
+    $("attach-btn").onclick = () => $("file-input").click();
+
+    $("file-input").onchange = (e) => {
+      const files = e.target.files;
+      if (!files.length) return;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        
+        if (file.type.startsWith("image/")) {
+          reader.onload = (event) => {
+            selectedFiles.push({
+              name: file.name,
+              type: file.type,
+              dataUrl: event.target.result,
+              size: file.size
+            });
+            renderAttachmentPreview();
+          };
+          reader.readAsDataURL(file);
+        } else {
+          reader.onload = (event) => {
+            selectedFiles.push({
+              name: file.name,
+              type: file.type,
+              content: event.target.result,
+              size: file.size
+            });
+            renderAttachmentPreview();
+          };
+          reader.readAsText(file);
+        }
+      }
+      $("file-input").value = "";
+    };
+
+    function renderAttachmentPreview() {
+      const preview = $("composer-attachments");
+      if (selectedFiles.length === 0) {
+        preview.classList.add("hidden");
+        preview.innerHTML = "";
+        return;
+      }
+      
+      preview.classList.remove("hidden");
+      preview.innerHTML = "";
+      
+      selectedFiles.forEach((file, index) => {
+        const pill = document.createElement("div");
+        pill.className = "attachment-pill";
+        
+        if (file.type.startsWith("image/") && file.dataUrl) {
+          const img = document.createElement("img");
+          img.src = file.dataUrl;
+          pill.appendChild(img);
+        } else {
+          const icon = document.createElement("span");
+          icon.textContent = "📎 ";
+          pill.appendChild(icon);
+        }
+        
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        pill.appendChild(nameSpan);
+        
+        const removeBtn = document.createElement("span");
+        removeBtn.className = "remove-attachment";
+        removeBtn.textContent = " ×";
+        removeBtn.onclick = () => {
+          selectedFiles.splice(index, 1);
+          renderAttachmentPreview();
+        };
+        pill.appendChild(removeBtn);
+        
+        preview.appendChild(pill);
+      });
+    }
     for (const button of document.querySelectorAll(".tab")) {
       button.onclick = () => switchTab(button.dataset.tab);
     }
@@ -802,7 +1200,8 @@ def create_app() -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     def ui() -> str:
-        return UI_HTML
+        cwd = str(Path.cwd().resolve())
+        return UI_HTML.replace('value="/Users/dshs_llm/exo"', f'value="{cwd}"')
 
     @app.post("/sessions")
     def create_session(payload: CreateSessionRequest) -> dict[str, Any]:
@@ -832,6 +1231,15 @@ def create_app() -> FastAPI:
             return {"message": Message(role="assistant", content=response).to_dict()}
         except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail="session not found") from e
+
+    @app.post("/sessions/{session_id}/messages/stream")
+    def chat_stream(session_id: str, payload: ChatRequest) -> StreamingResponse:
+        try:
+            generator = runner.chat_stream(session_id, payload.message, context=payload.context)
+            return StreamingResponse(generator, media_type="text/plain")
+        except FileNotFoundError as e:
+            raise HTTPException(status_code=404, detail="session not found") from e
+
 
     @app.post("/sessions/{session_id}/runs")
     def run_coding(session_id: str, payload: CodingRunRequest) -> dict[str, Any]:
