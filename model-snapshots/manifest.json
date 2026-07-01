@@ -1,0 +1,1161 @@
+{
+  "generated_at": "2026-07-01T06:33:03.153312+00:00",
+  "note": "Weights remain in external/local model storage because GitHub LFS has per-file limits.",
+  "roots": [
+    {
+      "source": "/Users/dshs_llm/models",
+      "total_bytes": 126344531186,
+      "file_count": 154,
+      "files": [
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/.gitattributes",
+          "size_bytes": 1570,
+          "modified_at": "2026-07-01T05:45:38.098785+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/README.md",
+          "size_bytes": 992,
+          "modified_at": "2026-07-01T05:45:37.905757+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/config.json",
+          "size_bytes": 715,
+          "modified_at": "2026-07-01T05:45:37.906558+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00001-of-00013.safetensors",
+          "size_bytes": 5174846564,
+          "modified_at": "2026-07-01T05:57:08.052088+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00001-of-00013.safetensors.aria2",
+          "size_bytes": 675,
+          "modified_at": "2026-07-01T05:57:08.215850+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": true
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00002-of-00013.safetensors",
+          "size_bytes": 5285039836,
+          "modified_at": "2026-07-01T06:05:11.509592+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00003-of-00013.safetensors",
+          "size_bytes": 5159174970,
+          "modified_at": "2026-07-01T06:11:24.699790+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00004-of-00013.safetensors",
+          "size_bytes": 5159174991,
+          "modified_at": "2026-07-01T06:09:22.784025+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00005-of-00013.safetensors",
+          "size_bytes": 5285039914,
+          "modified_at": "2026-07-01T06:04:27.370904+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00006-of-00013.safetensors",
+          "size_bytes": 5159174989,
+          "modified_at": "2026-07-01T06:21:36.701541+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00006-of-00013.safetensors.aria2",
+          "size_bytes": 674,
+          "modified_at": "2026-07-01T06:21:36.784618+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": true
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00007-of-00013.safetensors",
+          "size_bytes": 5159174993,
+          "modified_at": "2026-07-01T06:18:23.792520+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00007-of-00013.safetensors.aria2",
+          "size_bytes": 654,
+          "modified_at": "2026-07-01T06:18:23.933499+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": true
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00008-of-00013.safetensors",
+          "size_bytes": 5285039914,
+          "modified_at": "2026-07-01T06:21:32.103003+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00009-of-00013.safetensors",
+          "size_bytes": 5159174987,
+          "modified_at": "2026-07-01T06:27:06.370231+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00010-of-00013.safetensors",
+          "size_bytes": 5159174997,
+          "modified_at": "2026-07-01T06:29:56.849132+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00011-of-00013.safetensors",
+          "size_bytes": 5285039932,
+          "modified_at": "2026-07-01T06:28:05.971542+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00012-of-00013.safetensors",
+          "size_bytes": 5159174991,
+          "modified_at": "2026-07-01T06:32:59.237617+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00013-of-00013.safetensors",
+          "size_bytes": 3098609663,
+          "modified_at": "2026-07-01T06:30:05.093298+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model.safetensors.index.json",
+          "size_bytes": 66343,
+          "modified_at": "2026-07-01T06:28:06.628747+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/special_tokens_map.json",
+          "size_bytes": 485,
+          "modified_at": "2026-07-01T06:28:07.561520+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/tokenizer.json",
+          "size_bytes": 11422778,
+          "modified_at": "2026-07-01T06:28:10.737342+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/tokenizer_config.json",
+          "size_bytes": 6754,
+          "modified_at": "2026-07-01T06:28:11.561912+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/.gitignore",
+          "size_bytes": 1,
+          "modified_at": "2026-07-01T02:05:50.681405+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/.gitattributes.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.625161+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/.gitattributes.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.625720+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/.gitignore.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.302724+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/.gitignore.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.303139+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/README.md.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.371527+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/README.md.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.371836+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/chat_template.jinja.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.343394+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/chat_template.jinja.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.343678+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.403562+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.403916+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/configuration.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.394701+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/configuration.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.395058+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/generation_config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.330940+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/generation_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.331259+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/merges.txt.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:51.668860+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/merges.txt.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:51.669040+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00001-of-00005.safetensors.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:19:24.293240+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00001-of-00005.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T02:19:24.293370+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00002-of-00005.safetensors.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:20:54.894232+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00002-of-00005.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T02:20:54.894341+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00003-of-00005.safetensors.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:18:49.693374+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00003-of-00005.safetensors.metadata",
+          "size_bytes": 123,
+          "modified_at": "2026-07-01T02:18:49.693499+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00004-of-00005.safetensors.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:17:19.907069+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00004-of-00005.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T02:17:19.907186+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00005-of-00005.safetensors.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:08:51.289608+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model-00005-of-00005.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T02:08:51.289721+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model.safetensors.index.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:52.121489+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/model.safetensors.index.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:52.121574+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/preprocessor_config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:52.331080+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/preprocessor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:52.331208+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/processor_config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:52.324810+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/processor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:52.324921+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/quant_recipe.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:52.873391+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/quant_recipe.json.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-07-01T02:05:52.873861+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/tokenizer.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:55.060478+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/tokenizer.json.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T02:05:55.060950+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/tokenizer_config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:52.999670+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/tokenizer_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:53.000151+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/video_preprocessor_config.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:53.705176+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/video_preprocessor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:53.706469+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/vocab.json.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T02:05:53.853282+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.cache/huggingface/download/vocab.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T02:05:53.855046+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.gitattributes",
+          "size_bytes": 1570,
+          "modified_at": "2026-07-01T02:05:51.621262+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/.gitignore",
+          "size_bytes": 18,
+          "modified_at": "2026-07-01T02:05:51.301108+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/README.md",
+          "size_bytes": 1003,
+          "modified_at": "2026-07-01T02:05:51.369685+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/chat_template.jinja",
+          "size_bytes": 7764,
+          "modified_at": "2026-07-01T02:05:51.341927+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/config.json",
+          "size_bytes": 71971,
+          "modified_at": "2026-07-01T02:05:51.401964+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/configuration.json",
+          "size_bytes": 58,
+          "modified_at": "2026-07-01T02:05:51.392848+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/generation_config.json",
+          "size_bytes": 202,
+          "modified_at": "2026-07-01T02:05:51.329267+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/merges.txt",
+          "size_bytes": 3353259,
+          "modified_at": "2026-07-01T02:05:51.667575+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model-00001-of-00005.safetensors",
+          "size_bytes": 5258297011,
+          "modified_at": "2026-07-01T02:19:24.169451+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model-00002-of-00005.safetensors",
+          "size_bytes": 5254090056,
+          "modified_at": "2026-07-01T02:20:54.839019+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model-00003-of-00005.safetensors",
+          "size_bytes": 5260979664,
+          "modified_at": "2026-07-01T02:18:49.635493+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model-00004-of-00005.safetensors",
+          "size_bytes": 4874922786,
+          "modified_at": "2026-07-01T02:17:19.869587+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model-00005-of-00005.safetensors",
+          "size_bytes": 540344667,
+          "modified_at": "2026-07-01T02:08:51.251104+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/model.safetensors.index.json",
+          "size_bytes": 214420,
+          "modified_at": "2026-07-01T02:05:52.121017+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/preprocessor_config.json",
+          "size_bytes": 390,
+          "modified_at": "2026-07-01T02:05:52.330652+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/processor_config.json",
+          "size_bytes": 1191,
+          "modified_at": "2026-07-01T02:05:52.324234+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/quant_recipe.json",
+          "size_bytes": 578,
+          "modified_at": "2026-07-01T02:05:52.871206+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/tokenizer.json",
+          "size_bytes": 19989343,
+          "modified_at": "2026-07-01T02:05:54.862545+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/tokenizer_config.json",
+          "size_bytes": 1139,
+          "modified_at": "2026-07-01T02:05:52.997105+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/video_preprocessor_config.json",
+          "size_bytes": 385,
+          "modified_at": "2026-07-01T02:05:53.702740+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq/vocab.json",
+          "size_bytes": 6722759,
+          "modified_at": "2026-07-01T02:05:53.850835+00:00",
+          "repository": "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/.gitignore",
+          "size_bytes": 1,
+          "modified_at": "2026-07-01T01:45:57.989992+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/CACHEDIR.TAG",
+          "size_bytes": 191,
+          "modified_at": "2026-07-01T01:45:57.881750+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/.gitattributes.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-07-01T01:45:58.219122+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/README.md.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T01:45:59.325402+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T01:45:59.325383+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/model.safetensors.index.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T01:45:58.335263+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/model.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T01:46:36.681213+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/special_tokens_map.json.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-07-01T01:45:59.324893+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/tokenizer.json.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T01:46:02.088065+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.cache/huggingface/download/tokenizer_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-07-01T01:45:58.335193+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/.gitattributes",
+          "size_bytes": 1570,
+          "modified_at": "2026-07-01T01:45:58.218425+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/README.md",
+          "size_bytes": 16310,
+          "modified_at": "2026-07-01T01:45:59.324261+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/config.json",
+          "size_bytes": 1121,
+          "modified_at": "2026-07-01T01:45:59.324056+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/model.safetensors",
+          "size_bytes": 695283921,
+          "modified_at": "2026-07-01T01:46:36.680033+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/model.safetensors.index.json",
+          "size_bytes": 26159,
+          "modified_at": "2026-07-01T01:45:58.334253+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/special_tokens_map.json",
+          "size_bytes": 296,
+          "modified_at": "2026-07-01T01:45:59.323762+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/tokenizer.json",
+          "size_bytes": 17209920,
+          "modified_at": "2026-07-01T01:46:02.086817+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Llama-3.2-1B-Instruct-4bit/tokenizer_config.json",
+          "size_bytes": 54558,
+          "modified_at": "2026-07-01T01:45:58.331697+00:00",
+          "repository": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/.gitignore",
+          "size_bytes": 1,
+          "modified_at": "2026-06-30T05:13:20.103301+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/CACHEDIR.TAG",
+          "size_bytes": 191,
+          "modified_at": "2026-06-30T05:13:20.044269+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/.gitattributes.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:20.377285+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/README.md.metadata",
+          "size_bytes": 99,
+          "modified_at": "2026-06-30T05:13:20.375570+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/chat_template.jinja.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:20.375836+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/config.json.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-06-30T05:13:20.598000+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/configuration.json.metadata",
+          "size_bytes": 99,
+          "modified_at": "2026-06-30T05:13:20.356253+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/generation_config.json.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-06-30T05:13:20.375591+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/model-00001-of-00004.safetensors.metadata",
+          "size_bytes": 123,
+          "modified_at": "2026-06-30T05:28:51.013848+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/model-00002-of-00004.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-06-30T05:26:43.652452+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/model-00003-of-00004.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-06-30T05:26:32.110376+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/model-00004-of-00004.safetensors.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-06-30T05:24:58.553554+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/model.safetensors.index.json.metadata",
+          "size_bytes": 101,
+          "modified_at": "2026-06-30T05:13:20.887082+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/preprocessor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:20.843301+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/processor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:20.867895+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/tokenizer.json.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-06-30T05:13:26.254147+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/tokenizer_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:21.135789+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/video_preprocessor_config.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:21.135789+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.cache/huggingface/download/vocab.json.metadata",
+          "size_bytes": 100,
+          "modified_at": "2026-06-30T05:13:21.426637+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/.gitattributes",
+          "size_bytes": 1570,
+          "modified_at": "2026-06-30T05:13:20.374840+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/README.md",
+          "size_bytes": 724,
+          "modified_at": "2026-06-30T05:13:20.373879+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/chat_template.jinja",
+          "size_bytes": 7764,
+          "modified_at": "2026-06-30T05:13:20.374373+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/config.json",
+          "size_bytes": 23591,
+          "modified_at": "2026-06-30T05:13:20.595165+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/configuration.json",
+          "size_bytes": 58,
+          "modified_at": "2026-06-30T05:13:20.354381+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/generation_config.json",
+          "size_bytes": 202,
+          "modified_at": "2026-06-30T05:13:20.374114+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/model-00001-of-00004.safetensors",
+          "size_bytes": 5288196018,
+          "modified_at": "2026-06-30T05:28:51.009922+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/model-00002-of-00004.safetensors",
+          "size_bytes": 5368472749,
+          "modified_at": "2026-06-30T05:26:43.644369+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/model-00003-of-00004.safetensors",
+          "size_bytes": 5368324139,
+          "modified_at": "2026-06-30T05:26:32.105953+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/model-00004-of-00004.safetensors",
+          "size_bytes": 4377211365,
+          "modified_at": "2026-06-30T05:24:58.551016+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/model.safetensors.index.json",
+          "size_bytes": 215755,
+          "modified_at": "2026-06-30T05:13:20.886494+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/preprocessor_config.json",
+          "size_bytes": 390,
+          "modified_at": "2026-06-30T05:13:20.842762+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/processor_config.json",
+          "size_bytes": 1312,
+          "modified_at": "2026-06-30T05:13:20.867103+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/tokenizer.json",
+          "size_bytes": 19989343,
+          "modified_at": "2026-06-30T05:13:26.248803+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/tokenizer_config.json",
+          "size_bytes": 1139,
+          "modified_at": "2026-06-30T05:13:21.133451+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/video_preprocessor_config.json",
+          "size_bytes": 385,
+          "modified_at": "2026-06-30T05:13:21.133142+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--Qwen3.6-35B-A3B-4bit/vocab.json",
+          "size_bytes": 6722759,
+          "modified_at": "2026-06-30T05:13:21.424485+00:00",
+          "repository": "mlx-community/Qwen3.6-35B-A3B-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/.gitattributes",
+          "size_bytes": 1570,
+          "modified_at": "2026-07-01T05:19:45.039875+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/README.md",
+          "size_bytes": 713,
+          "modified_at": "2026-07-01T05:19:45.070651+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/chat_template.jinja",
+          "size_bytes": 17466,
+          "modified_at": "2026-07-01T05:19:45.071268+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/config.json",
+          "size_bytes": 5647,
+          "modified_at": "2026-07-01T05:19:45.069919+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/generation_config.json",
+          "size_bytes": 208,
+          "modified_at": "2026-07-01T05:19:45.070235+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/model-00001-of-00004.safetensors",
+          "size_bytes": 5366617542,
+          "modified_at": "2026-07-01T05:44:02.608343+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/model-00002-of-00004.safetensors",
+          "size_bytes": 5361642569,
+          "modified_at": "2026-07-01T05:45:37.027897+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/model-00003-of-00004.safetensors",
+          "size_bytes": 5367276098,
+          "modified_at": "2026-07-01T05:45:17.287356+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/model-00004-of-00004.safetensors",
+          "size_bytes": 2316480623,
+          "modified_at": "2026-07-01T05:41:38.510397+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/model.safetensors.index.json",
+          "size_bytes": 205370,
+          "modified_at": "2026-07-01T05:19:45.336947+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/processor_config.json",
+          "size_bytes": 627,
+          "modified_at": "2026-07-01T05:19:45.358349+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/tokenizer.json",
+          "size_bytes": 32169626,
+          "modified_at": "2026-07-01T05:19:50.058645+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        },
+        {
+          "path": "mlx-community--gemma-4-31b-it-4bit/tokenizer_config.json",
+          "size_bytes": 2095,
+          "modified_at": "2026-07-01T05:19:45.336673+00:00",
+          "repository": "mlx-community/gemma-4-31b-it-4bit",
+          "incomplete": false
+        }
+      ]
+    },
+    {
+      "source": "/Users/dshs_llm/llm-models",
+      "total_bytes": 63164230170,
+      "file_count": 9,
+      "files": [
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/.gitignore",
+          "size_bytes": 1,
+          "modified_at": "2026-06-30T01:51:04.449852+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/CACHEDIR.TAG",
+          "size_bytes": 191,
+          "modified_at": "2026-06-30T01:51:04.449649+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/download/Huihui-Qwen3.6-35B-A3B-abliterated-Q4_K_M.gguf.metadata",
+          "size_bytes": 124,
+          "modified_at": "2026-07-01T04:05:50.850368+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/download/Qwen3.6-35B-A3B-Q8_0.gguf.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-06-30T01:51:04.704390+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/download/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf.lock",
+          "size_bytes": 0,
+          "modified_at": "2026-07-01T04:14:59.330844+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/download/T9Jjd9r15nyDjFVZA12qM9v2eIg=.ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61.5da364a6.incomplete",
+          "size_bytes": 2438789484,
+          "modified_at": "2026-07-01T04:20:10.288006+00:00",
+          "repository": null,
+          "incomplete": true
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/.cache/huggingface/download/tSju-UlxSuTVysCMRrOzEILjWas=.d1a395809f65a43a13ad119eb4e7acdef1ac6d68120f39902c8ab96e72794a59.6cf51eaa.incomplete",
+          "size_bytes": 2655541842,
+          "modified_at": "2026-06-30T01:51:51.526837+00:00",
+          "repository": null,
+          "incomplete": true
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/Huihui-Qwen3.6-35B-A3B-abliterated-Q4_K_M.gguf",
+          "size_bytes": 21166758208,
+          "modified_at": "2026-07-01T04:05:50.843012+00:00",
+          "repository": null,
+          "incomplete": false
+        },
+        {
+          "path": "Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-Q8_0.gguf",
+          "size_bytes": 36903140320,
+          "modified_at": "2026-06-30T03:14:58.959666+00:00",
+          "repository": null,
+          "incomplete": false
+        }
+      ]
+    }
+  ]
+}

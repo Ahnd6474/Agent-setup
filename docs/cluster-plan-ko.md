@@ -1,408 +1,418 @@
-# 4대 Mac mini 분산 LLM 서비스 실행 계획
+# 4대 Mac mini exo 클러스터 운영 가이드
 
-이 문서는 4대 Mac mini로 exo 클러스터를 만들고 MiniMax M3를 실제로 돌리기 위한 실행 계획입니다.
-핵심은 아래 3가지입니다.
+> 최종 확인: 2026-06-30
+> 기준: 이 저장소의 현재 스크립트, node1의 `scripts/cluster.env`, 실행 중인 exo API
 
-- 4대 Mac mini를 하나의 클러스터처럼 묶어 큰 모델을 돌린다
-- 웹 UI와 OpenAI-compatible API로 서비스를 제공한다
-- Claude Code까지 연결해서 실제 개발 도구로 사용할 수 있게 만든다
+이 문서는 새 클러스터 구축 계획이 아니라 현재 운영 중인 4대 Mac mini 클러스터의
+구성, 시작·중지, 모델 배치, API 연동 절차를 설명한다.
 
-## 1. 목표
+## 1. 현재 구성
 
-- Apple Silicon Mac mini 4대를 내부망에 연결한다
-- exo/MLX 기반 분산 추론으로 단일 대형 모델을 나눠서 실행한다
-- master node는 API와 웹 UI 진입점 역할을 한다
-- worker 3대는 같은 클러스터에 참여해 모델 연산을 분담한다
-- Claude Code는 exo의 Claude Messages 호환 엔드포인트로 연결한다
+| 항목 | 현재 값 |
+|---|---|
+| 노드 | Mac mini 4대 |
+| SoC / 메모리 | Apple M4 Pro / 노드당 64 GiB |
+| OS | macOS 26.5 (빌드 25F71), 4대 동일 |
+| exo API | node1 `http://127.0.0.1:52415` |
+| libp2p | TCP 52416, namespace `macmini-rdma-llm` |
+| 제어 경로 | node1에서 SSH, 기본 `CONNECT_TYPE=line` |
+| 추론 경로 | Thunderbolt RDMA가 포함된 exo 토폴로지 |
+| 현재 모델 설정 | `mlx-community/Qwen3.6-35B-A3B-4bit` |
+| 현재 배치 | `Pipeline` / `MlxRing`, 최소 4노드 |
+| 모델 디렉터리 | `/Users/dshs_llm/models` |
 
-## 2. 권장 구성
+2026-06-30에 `/state/topology`로 4개 노드와 node1↔worker의
+`rdma_en*` 링크를 확인했다. 현재 인스턴스는 자동 상주하지 않으며, 클러스터 시작 후
+필요한 모델 인스턴스를 별도로 배치한다.
 
-- 노드 수: 4대
-- 권장 기종: Mac mini M4 또는 M4 Pro 계열
-- 메모리: 각 64GB unified memory
-- 네트워크: Thunderbolt Bridge 또는 10GbE 우선, 최소 유선 Ethernet
-- 비권장: Wi-Fi
+## 2. 구조와 중요한 제약
 
-예시 고정 IP:
+### 서비스와 포트 경계
 
-- Master: `10.80.118.167`
-- Worker 1: `10.80.118.168`
-- Worker 2: `10.80.118.169`
-- Worker 3: `10.80.118.170`
+| 포트 | 서비스 | 책임 | 공개 범위 |
+|---|---|---|---|
+| `8765` | Agentic Local Server | 최종 사용자 GUI, 계정, 채팅 세션, 기억, 세션 자원 | 인증된 사용자 진입점 |
+| `52415` | exo control plane | 클러스터 모니터링, 모델 다운로드·배치, 인스턴스 관리, inference API·운영 진단 | node1 내부/관리망 |
+| `52416` | exo libp2p | master-worker discovery와 노드 통신 | 클러스터 내부망 |
+| `8080` | 선택적 llama.cpp backend | 단일 backend inference API | node1 내부 |
 
-## 3. 동작 구조
+`8765`가 사용자 제품이고 `52415`는 모니터링·관리 패널이다. `8765`에서 exo
+모델을 사용할 때 요청은 내부적으로 `52415/v1`로 전달된다. `52415` 대시보드는
+채팅 UI를 제공하지 않으며 노드별 메모리·디스크·CPU/GPU·온도·전력·RDMA 상태와
+모델 인스턴스를 관리한다. 추론 진단은 `52415/v1` API를 직접 호출한다.
 
-요청 흐름은 다음 순서로 잡는다.
+```text
+최종 사용자
+  └─ node1:8765 Agentic 사용자 GUI/API
+       └─ node1:52415/v1 (선택한 exo inference backend)
 
-`Client -> Nginx/Caddy 또는 API Gateway -> exo API/dashboard -> 4대 Mac mini 클러스터`
+클러스터 운영자·내부 API client
+  └─ node1:52415 exo control plane
+       ├─ 모니터링·관리 dashboard
+       ├─ OpenAI API / Claude Messages API
+       ├─ exo master 및 로컬 worker
+       └─ node2, node3, node4 worker
+```
 
-제어와 데이터 경로는 분리한다.
+node1은 API 진입점이면서 추론 노드에도 포함된다. node2~4만 추론하고 node1은
+제어만 담당하는 구조가 아니다.
 
-- 제어 경로
-  - node1이 SSH로 worker 프로세스를 시작/중지/재시작한다
-  - exo API가 모델 배치, 인스턴스 생성, 상태 확인을 담당한다
-- 데이터/텐서 통신 경로
-  - exo의 `MlxJaccl` + `Tensor` placement를 사용한다
-  - Thunderbolt RDMA 인터페이스는 JACCL backend가 사용한다
-  - fallback이나 초기 검증은 Thunderbolt TCP/Bridge로 가능하지만, 최종 목적은 RDMA-backed placement다
+현재 Thunderbolt 배선은 node1 중심의 star 형태다. 모든 노드 사이에 직접 RDMA
+링크가 있는 cycle이 아니므로 `Tensor/MlxJaccl`을 강제로 선택하지 않는다.
+현재 검증된 기본값은 다음과 같다.
 
-역할은 다음과 같다.
+```bash
+SHARDING=Pipeline
+INSTANCE_META=MlxRing
+```
 
-- master node
-  - `uv run exo` 실행
-  - OpenAI-compatible API 제공
-  - 웹 UI 접속 지점 제공
-  - 전체 추론 작업 조정
-- worker node 3대
-  - `uv run exo` 실행
-  - 모델 일부와 연산 일부 담당
+완전 연결 또는 RDMA cycle로 배선을 변경하고 exo placement preview가
+`Tensor/MlxJaccl`을 유효한 배치로 반환할 때만 해당 조합을 사용한다.
 
-## 4. 모델 선택
+## 3. 설정 파일
 
-기준은 다음 순서로 본다.
+로컬 운영값은 Git에 커밋하지 않는 `scripts/cluster.env`에 둔다.
 
-- 최신성
-- 성능
-- 메모리 적합성
-- GGUF 지원 여부
+```bash
+cd /Users/dshs_llm/exo
+cp scripts/cluster.env.example scripts/cluster.env
+```
 
-exo에서 실제로 바로 구동하기 좋은 모델:
+현재 예시 파일은 실제 구성과 같은 변수 체계를 사용한다.
 
-- `pipenetwork/MiniMax-M3-MLX-4bit`
-- 이유: 이 저장소는 MLX 백엔드 기반이기 때문에 GGUF보다 바로 연결하기 쉽다
+```bash
+MASTER_HOST=127.0.0.1
+CONNECT_TYPE=line
 
-참고:
+WORKER1_LINE_HOST=node2@10.0.0.2
+WORKER2_LINE_HOST=node3@10.0.0.3
+WORKER3_LINE_HOST=node4@10.0.0.4
 
-- llama.cpp/GGUF 경로를 쓰는 별도 클러스터라면 `unsloth/MiniMax-M3-GGUF`를 쓰면 된다
-- 이 저장소에서는 모델 카드와 대시보드 연동을 위해 MLX 4bit 변환본을 우선 사용한다
+NAMESPACE=macmini-rdma-llm
+MODEL_ID=mlx-community/Qwen3.6-35B-A3B-4bit
+MIN_NODES=4
 
-대체 후보:
+REPO_DIR=/Users/dshs_llm/exo
+MODELS_DIR=/Users/dshs_llm/models
+API_HOST=127.0.0.1
+API_PORT=52415
+LIBP2P_PORT=52416
 
-- `Qwen3-235B-A22B` 계열
+SHARDING=Pipeline
+INSTANCE_META=MlxRing
+FAST_SYNCH=true
+```
 
-## 5. 구축 순서
+`*_LINE_HOST`는 Thunderbolt 또는 전용 유선 제어 경로이고 `*_NET_HOST`는 일반
+LAN fallback이다. 전용 경로에 문제가 있으면 `CONNECT_TYPE=net`으로 바꿔
+SSH 제어 경로만 전환할 수 있다.
 
-### 5-1. 네트워크 준비
+각 장치는 `MASTER_NODE_NAME=node1`, `WORKER1_NODE_NAME=node2`부터
+`WORKER3_NODE_NAME=node4`까지의 고정 표시 이름을 사용한다. libp2p peer ID는
+장치별 `~/.exo/node_id.keypair`에 mode `0600`으로 영속화되므로 동일 장치를
+재시작해도 node ID가 바뀌지 않는다. 이 파일을 다른 장치에 복사하면 peer ID가
+충돌하므로 모델·runtime 동기화 대상에 포함하지 않는다.
 
-1. 4대 Mac mini에 고정 IP를 설정한다
-2. SSH 접속을 모두 활성화한다
-3. 같은 내부망에서 서로 ping 또는 SSH가 되는지 확인한다
-4. Thunderbolt Bridge 또는 10GbE 링크가 실제로 연결됐는지 확인한다
-5. RDMA/JACCL 경로를 쓸 때는 Thunderbolt Bridge 대신 각 Thunderbolt 포트를 DHCP 서비스로 구성한다
+## 4. 최초 준비
 
-SSH를 항상 켜두려면 각 Mac mini에서 아래 명령을 한 번 실행한다.
+### 공통 소프트웨어
+
+각 노드에 같은 저장소 revision과 다음 도구가 필요하다.
+
+- Xcode 및 Metal toolchain
+- `uv`, Node.js, Rust nightly
+- `screen`, `git`, `curl`
+- 저장소의 `.venv`
+
+대시보드는 node1에서 빌드한다.
+
+```bash
+cd /Users/dshs_llm/exo/dashboard
+npm install
+npm run build
+```
+
+### SSH
+
+각 worker에서 Remote Login을 활성화한다.
 
 ```bash
 sudo /usr/sbin/systemsetup -setremotelogin on
 /usr/sbin/systemsetup -getremotelogin
 ```
 
-이 설정은 재부팅 후에도 Remote Login을 유지한다.
+`scripts/bootstrap_macmini_worker.sh`에는 특정 node1 공개키가 포함되어 있으므로
+새 클러스터에 그대로 재사용하지 말고 공개키를 먼저 검토한다.
 
-RDMA/JACCL 경로를 구성하려면 각 Mac mini에서 아래를 실행한다.
+### RDMA
+
+RDMA는 macOS Recovery에서 `rdma_ctl enable`을 실행한 뒤, macOS 부팅 후
+각 Thunderbolt 포트를 exo용 DHCP 서비스로 구성해야 한다. 4대의 macOS 버전과
+빌드 번호를 동일하게 유지한다.
+
+현재 저장소 래퍼:
 
 ```bash
-cd ~/exo
 scripts/configure_rdma_network.sh
 ```
 
-4대에 한 번에 적용하려면 node1에서 `scripts/cluster.env`를 먼저 맞춘 뒤 실행한다.
+이 명령은 `tmp/set_rdma_network_config.sh`를 실행하며 기존 Thunderbolt Bridge와
+네트워크 location을 변경한다. 원격 SSH 경로를 끊을 수 있으므로 물리 접근이 가능한
+상태에서 한 노드씩 적용한다. 모든 노드에 일괄 적용하는 명령은 다음과 같다.
 
 ```bash
-cp scripts/cluster.env.example scripts/cluster.env
+CONFIG_FILE=scripts/cluster.env \
 scripts/configure_rdma_network_on_cluster.sh
 ```
 
-### 5-2. 개발 도구 설치
+## 5. 시작, 상태 확인, 중지
 
-모든 장비에 다음을 설치한다.
-
-- Homebrew
-- `cmake`
-- `git`
-- `git-lfs`
-- `uv`
-- `node`
-- Rust nightly
-
-### 5-3. exo dashboard 빌드
-
-master node에서 대시보드를 빌드한다.
+### 시작
 
 ```bash
-cd dashboard && npm install && npm run build && cd ..
-```
-
-### 5-4. 모델 다운로드
-
-master node에서 모델을 내려받는다.
-
-```bash
-uv run python scripts/download_model_to_cluster.py pipenetwork/MiniMax-M3-MLX-4bit --host <master-host>
-```
-
-- 모델이 모든 노드에 정상적으로 내려받아지는지 확인한다
-- GUI에서 모델 카드가 보이는지 확인한다
-
-### 5-5. worker 실행
-
-4대 Mac mini에서 모두 `uv run exo`를 실행한다.
-
-- master 노드는 대시보드와 API 진입점 역할을 한다
-- 나머지 3대는 같은 클러스터에 참여해 연산을 분담한다
-- 내부망에서만 통신되도록 네트워크와 namespace를 맞춘다
-
-### 5-6. master 실행
-
-master node에서 `uv run exo`를 실행한 뒤 대시보드에서 MiniMax M3 모델을 선택한다.
-
-- 초기 `context size`는 작은 값부터 시작한다
-- 안정화되면 더 큰 context로 늘린다
-- 필요하면 `EXO_LIBP2P_NAMESPACE`로 클러스터를 분리한다
-
-node1에서 한 번에 실행하려면:
-
-```bash
+cd /Users/dshs_llm/exo
 scripts/start_4node_exo_cluster.sh
 ```
 
-RDMA/JACCL placement를 확인한다.
+스크립트는 다음 작업을 수행한다.
+
+1. node1에서 `exo-master` screen 세션을 시작한다.
+2. 선택한 SSH 제어 경로로 worker 3대를 시작한다.
+3. 각 worker에 node1의 bootstrap peer를 전달한다.
+4. `/state/topology`에 최소 4개 노드가 나타날 때까지 기다린다.
+
+기존 master까지 재시작하려면:
+
+```bash
+RESTART=true scripts/start_4node_exo_cluster.sh
+```
+
+### 상태
+
+```bash
+scripts/status_4node_exo_cluster.sh
+scripts/verify_4node_exo_cluster.sh 127.0.0.1 52415
+```
+
+직접 확인할 수도 있다.
+
+```bash
+curl -fsS http://127.0.0.1:52415/state/topology | python3 -m json.tool
+curl -fsS http://127.0.0.1:52415/state | python3 -m json.tool
+```
+
+정상 기준:
+
+- `topology_nodes=4`
+- 4개 노드의 `lastSeen`이 계속 갱신됨
+- node identity의 OS version/build가 동일함
+- topology connection에 기대한 `sourceRdmaIface`와 `sinkRdmaIface`가 존재함
+
+`scripts/verify_rdma_cluster.sh`는 node1에서 RDMA 인터페이스 3개와 80 Gb/s
+Thunderbolt IP port를 요구한다. 현재 star 배선과 `Pipeline/MlxRing` placement를
+검증하는 명령이다.
 
 ```bash
 scripts/verify_rdma_cluster.sh
 ```
 
-RDMA-backed tensor parallel 인스턴스를 생성한다.
+### 중지
+
+worker 세션만 중지:
+
+```bash
+scripts/stop_4node_exo_cluster.sh
+```
+
+로컬 master listener도 중지:
+
+```bash
+STOP_MASTER=true scripts/stop_4node_exo_cluster.sh
+```
+
+## 6. 모델 준비와 인스턴스 배치
+
+현재 exo 경로는 MLX 모델 카드를 기준으로 한다. GGUF 다운로드·동기화 스크립트는
+별도 llama.cpp 실험용이며 현재 exo MLX 배치 절차와 섞지 않는다.
+
+현재 Qwen weight는 정규화된 디렉터리에 두며 모든 노드에 동일하게 복제한다.
+
+```bash
+scripts/sync_exo_model_to_cluster.sh
+scripts/verify_exo_model_on_cluster.sh
+```
+
+worker에 Xcode/Metal compiler가 없어 node1에서 검증한 prebuilt MLX runtime을
+복제하는 경우 다음을 사용한다.
+
+```bash
+scripts/sync_runtime_to_cluster.sh
+```
+
+클러스터 전체 노드에 MLX 모델을 다운로드하려면:
+
+```bash
+uv run python scripts/download_model_to_cluster.py \
+  mlx-community/Qwen3.6-35B-A3B-4bit \
+  --host 127.0.0.1
+```
+
+이 명령은 API 토폴로지의 각 노드에 `/download/start`를 보내고 완료될 때까지
+확인한다. `EXO_OFFLINE=true`로 시작한 클러스터에서는 필요한 모델 파일이 이미
+로컬에 있어야 한다.
+
+현재 설정값으로 인스턴스를 배치한다.
 
 ```bash
 scripts/place_rdma_instance.sh
 ```
 
-## 6. API 검증
+실제 요청은 다음과 같다.
 
-먼저 `curl`로 `/v1/chat/completions`를 시험한다.
+```json
+{
+  "model_id": "mlx-community/Qwen3.6-35B-A3B-4bit",
+  "sharding": "Pipeline",
+  "instance_meta": "MlxRing",
+  "min_nodes": 4
+}
+```
 
-예시:
+배치 가능 여부를 먼저 확인하려면:
 
 ```bash
-curl -N -X POST http://localhost:52415/v1/chat/completions \
+curl -fsS \
+  'http://127.0.0.1:52415/instance/previews?model_id=mlx-community/Qwen3.6-35B-A3B-4bit' \
+  | python3 -m json.tool
+```
+
+`error`가 없는 preview의 sharding, instance metadata, 예상 노드별 메모리를 확인한
+뒤 배치한다. 저장소 API에는 자동 배치용 `POST /place_instance`와 preview에서
+고른 인스턴스를 그대로 생성하는 `POST /instance`가 모두 있다.
+
+## 7. API 검증
+
+### OpenAI Chat Completions
+
+```bash
+curl -N http://127.0.0.1:52415/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{
-    "model": "pipenetwork/MiniMax-M3-MLX-4bit",
+    "model": "mlx-community/Qwen3.6-35B-A3B-4bit",
     "messages": [
-      {"role": "user", "content": "한국어로 짧게 자기소개해줘"}
+      {"role": "user", "content": "한국어로 한 문장만 답해줘"}
     ],
     "stream": true
   }'
 ```
 
-확인 항목:
-
-- 응답이 정상적으로 생성되는가
-- 스트리밍이 끊기지 않는가
-- 한국어 응답이 자연스러운가
-
-## 7. Claude Code 연동
-
-이 저장소는 이미 Claude Messages API 호환 엔드포인트인 `/v1/messages`를 제공한다.
-따라서 Claude Code는 공식 설정 변수인 `ANTHROPIC_BASE_URL`을 exo 게이트웨이 주소로 지정해서 이 엔드포인트로 연결할 수 있다.
-
-연동 원칙:
-
-- Claude Code의 요청 대상(base URL)을 exo 게이트웨이로 맞춘다
-- 내부적으로는 `/v1/messages`를 사용한다
-- 인증은 Claude Code 쪽 설정과 게이트웨이 정책을 함께 맞춘다
-- 외부 공개가 필요하면 master 앞단에 Nginx 또는 Caddy를 둔다
-
-운영 순서:
-
-1. master 또는 gateway에서 `/v1/messages`가 정상 동작하는지 먼저 확인한다
-2. Claude Code 공식 설정에서 custom base URL을 exo 게이트웨이로 지정한다
-3. 인증 토큰과 rate limit을 별도로 둔다
-4. Claude Code로 짧은 질의응답부터 검증한다
-5. 긴 코드 수정 작업과 다중 파일 편집까지 확장한다
-
-공식 문서 참고:
-
-- https://docs.anthropic.com/en/docs/claude-code/llm-gateway
-- https://docs.anthropic.com/en/docs/claude-code/iam
-
-## 8. 웹 UI 계획
-
-1단계:
-
-- llama.cpp 내장 web UI로 우선 검증
-
-2단계:
-
-- Next.js 또는 React 기반 커스텀 UI 구현
-- 채팅 인터페이스
-- 응답 스트리밍
-- 대화 세션 관리
-- 프롬프트 템플릿
-- 관리자 페이지
-- 서버 상태 표시
-- API 사용량 표시
-
-## 9. 보안 계획
-
-- Nginx 또는 Caddy reverse proxy 사용
-- HTTPS 적용
-- API key 인증 적용
-- rate limit 적용
-- 내부망과 외부망 분리
-- worker RPC 포트는 외부에 열지 않음
-
-## 10. 검증 항목
-
-### 기능 검증
-
-- 모델 로딩 성공
-- worker 연결 성공
-- API 응답 성공
-- 웹 UI 응답 성공
-- 한국어 질의응답 성공
-- 코드 생성 성공
-
-### 성능 검증
-
-- 첫 토큰 생성 시간
-- 초당 생성 토큰 수
-- 전체 응답 시간
-- 각 Mac mini 메모리 사용량
-- CPU/GPU 사용률
-- 네트워크 사용량
-- 동시 요청 처리 수
-
-### 안정성 검증
-
-- 장시간 실행 시 crash 여부
-- worker 중단 시 동작
-- 긴 prompt 처리 가능 여부
-- context size 증가에 따른 안정성
-- 반복 요청 시 메모리 누수 여부
-
-### TFLOPS 환산
-
-exo 벤치마크는 기본적으로 `generation_tps`를 측정한다. 합산 TFLOPS는 아래처럼 근사할 수 있다.
-
-```text
-estimated_TFLOPS ≈ generation_tps × 2 × active_params / 1e12
-```
-
-MiniMax M3처럼 MoE 모델은 총 파라미터가 아니라 **활성 파라미터**를 사용해야 한다.
-예를 들어 활성 파라미터가 약 23B이고 generation_tps가 100이면 대략 4.6 TFLOPS로 본다.
-
-실측 결과를 넣어 계산하려면:
+### Claude Messages
 
 ```bash
-scripts/estimate_tflops.py --generation-tps 100 --active-params-b 23
+curl -N http://127.0.0.1:52415/v1/messages \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: x' \
+  -H 'anthropic-version: 2023-06-01' \
+  -d '{
+    "model": "mlx-community/Qwen3.6-35B-A3B-4bit",
+    "max_tokens": 256,
+    "messages": [
+      {"role": "user", "content": "한국어로 한 문장만 답해줘"}
+    ],
+    "stream": true
+  }'
 ```
 
-## 11. 리스크와 대응
+응답 전에 `/state`에서 인스턴스와 runner가 생성됐는지 확인한다. 오류가 나면
+API 응답뿐 아니라 node1과 각 worker의 screen 로그를 함께 확인한다.
 
-- 메모리 부족
-  - `context size`를 작게 시작하고 점진적으로 늘린다
-- 네트워크 병목
-  - Wi-Fi를 쓰지 않고 유선 연결을 우선한다
-- RPC 안정성
-  - 내부망에서만 사용하고 직접 외부 노출을 피한다
-- 모델 호환성
-  - 최신 llama.cpp 빌드를 우선 사용하고 대체 모델을 준비한다
+대시보드는 `thinking` 또는 `thinking_toggle` capability가 있는 텍스트 모델에서
+reasoning selector를 표시한다. `INSTANT`, `LOW`, `MEDIUM`, `HIGH`, `XHIGH` 선택은
+각각 Chat Completions 요청의 `reasoning_effort`로 전달되며 `INSTANT`는
+`enable_thinking=false`, 나머지는 `enable_thinking=true`로 전달된다. 모델별 chat
+template가 세부 effort를 구분하지 않으면 `LOW`~`XHIGH`는 모두 thinking 활성화로
+동작할 수 있다.
 
-## 12. 실행 체크리스트
+## 8. Claude Code 연동
 
-- [ ] 4대 Mac mini IP/SSH 설정
-- [ ] 내부망 통신 확인
-- [ ] 개발 도구 설치
-- [ ] llama.cpp 빌드
-- [ ] 모델 다운로드
-- [ ] worker 3대 실행
-- [ ] master 실행
-- [ ] `/v1/chat/completions` 검증
-- [ ] `/v1/messages` 검증
-- [ ] Claude Code 연결
-- [ ] 웹 UI 확장
-- [ ] 성능/안정성 측정
+Claude Code는 Anthropic-format gateway를 `ANTHROPIC_BASE_URL`로 지정할 수 있다.
+exo base URL은 `/v1`을 붙이지 않은 API root여야 한다. Claude Code가 내부적으로
+`/v1/messages`를 호출한다.
 
-## 13. 바로 실행하는 준비 스크립트
-
-이 저장소에는 4대 Mac mini를 한 번에 준비하는 스크립트가 있다.
+node1에서 실행:
 
 ```bash
-scripts/prepare_4node_minimax_m3_cluster.sh \
-  10.80.118.167 10.80.118.168 10.80.118.169 10.80.118.170 \
-  my-dev-cluster
-```
-
-이 스크립트는 다음을 해준다.
-
-- 각 노드에 넣을 정확한 실행 명령을 출력한다
-- master 노드에 SSH로 접속해 exo를 실행한다
-- `EXO_LIBP2P_NAMESPACE`를 고정해서 서로 다른 클러스터와 섞이지 않게 한다
-- Claude Code용 `ANTHROPIC_BASE_URL` 예시를 같이 보여준다
-
-각 Mac mini에서 SSH를 부팅 시 자동 활성화하려면 다음을 실행한다.
-
-```bash
-scripts/enable_sshd_on_boot.sh
-```
-
-## 14. 다운로드 완료 후 실제 실행 명령
-
-### Master
-
-```bash
-cd ~/exo
-EXO_LIBP2P_NAMESPACE=my-dev-cluster EXO_OFFLINE=true \
-uv run exo --force-master --api-port 52415 --libp2p-port 0
-```
-
-### Worker 1
-
-```bash
-cd ~/exo
-EXO_LIBP2P_NAMESPACE=my-dev-cluster EXO_OFFLINE=true \
-uv run exo --api-port 52415 --libp2p-port 0
-```
-
-### Worker 2
-
-```bash
-cd ~/exo
-EXO_LIBP2P_NAMESPACE=my-dev-cluster EXO_OFFLINE=true \
-uv run exo --api-port 52415 --libp2p-port 0
-```
-
-### Worker 3
-
-```bash
-cd ~/exo
-EXO_LIBP2P_NAMESPACE=my-dev-cluster EXO_OFFLINE=true \
-uv run exo --api-port 52415 --libp2p-port 0
-```
-
-### 웹 UI
-
-master가 올라오면 브라우저에서 바로 연다.
-
-```text
-http://10.80.118.167:52415
-```
-
-### Claude Code
-
-CLI로 바로 실행할 때:
-
-```bash
-export ANTHROPIC_BASE_URL=http://10.80.118.167:52415
+export ANTHROPIC_BASE_URL=http://127.0.0.1:52415
 export ANTHROPIC_API_KEY=x
-export ANTHROPIC_DEFAULT_OPUS_MODEL=pipenetwork/MiniMax-M3-MLX-4bit
-export ANTHROPIC_DEFAULT_SONNET_MODEL=pipenetwork/MiniMax-M3-MLX-4bit
-export ANTHROPIC_DEFAULT_HAIKU_MODEL=pipenetwork/MiniMax-M3-MLX-4bit
+export ANTHROPIC_DEFAULT_OPUS_MODEL=mlx-community/Qwen3.6-35B-A3B-4bit
+export ANTHROPIC_DEFAULT_SONNET_MODEL=mlx-community/Qwen3.6-35B-A3B-4bit
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=mlx-community/Qwen3.6-35B-A3B-4bit
 export API_TIMEOUT_MS=3000000
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 claude
 ```
 
-설정 파일로 저장할 때는 [docs/claude-code-settings.example.json](/Users/dshs_llm/exo/docs/claude-code-settings.example.json)을 `~/.claude/settings.json`으로 옮기면 된다.
+예시는 `docs/claude-code-settings.example.json`에도 있다. 공식 gateway 문서는
+고정 토큰에 `ANTHROPIC_AUTH_TOKEN` 사용을 권장하지만, 현재 exo는 인증을 강제하지
+않는다. 내부망의 임시 값 `x`는 보안 경계가 아니다.
+
+Claude Code를 다른 장비에서 실행하려면 `127.0.0.1` 대신 접근 가능한 node1의
+LAN 주소 또는 인증된 reverse proxy 주소를 사용한다.
+
+## 9. Agentic Local Server
+
+OpenAI-compatible backend 위에서 계정별 로컬 채팅 세션을 제공하는 별도 서버가
+있다. 코딩 작업은 이 서버의 run 기능이 아니라 앞 절의 Claude Code를 사용한다.
+
+```bash
+cd /Users/dshs_llm/exo
+AGENTIC_LLM_BASE_URL=http://127.0.0.1:52415/v1 \
+AGENTIC_LLM_MODEL=mlx-community/Qwen3.6-35B-A3B-4bit \
+uv run --package exo-tools agent-server
+```
+
+최종 사용자 GUI는 `http://127.0.0.1:8765`이다. 클러스터 운영자는
+`http://127.0.0.1:52415`의 모니터링·관리 패널을 별도로 사용한다. 상세 기능과 제한은
+[`agentic-local-server.md`](agentic-local-server.md)를 참고한다.
+
+## 10. 보안과 운영 기준
+
+- `52415`는 관리면, `52416`은 내부 노드 통신이므로 인터넷에 공개하지 않는다.
+- 사용자 진입점은 `8765` 하나로 제한하고 Cloudflare Tunnel과 Access 뒤에 둔다.
+- 외부 접근에는 TLS, 인증, rate limit, 요청 크기 제한을 적용한다.
+- libp2p/worker 통신 포트는 신뢰된 내부망에서만 접근 가능하게 한다.
+- `scripts/cluster.env`와 토큰이 포함된 설정 파일은 커밋하지 않는다.
+- 배포 전 `/state/topology` 응답에 포함된 내부 주소와 노드 식별자 노출 여부를 검토한다.
+
+## 11. 장애 확인 순서
+
+1. `scripts/status_4node_exo_cluster.sh`
+2. `curl http://127.0.0.1:52415/state/topology`
+3. node1과 worker의 `~/.exo/exo.pid`
+4. `screen -ls` 및 각 screen 세션 로그
+5. SSH 제어 경로 확인 후 필요하면 `CONNECT_TYPE=net`
+6. 4대의 macOS version/build 일치 여부
+7. 모델 파일 존재 여부와 노드별 사용 가능 메모리
+8. `/instance/previews`의 placement error
+
+## 12. 현재 완료 상태
+
+- [x] M4 Pro 64 GiB Mac mini 4대 연결
+- [x] macOS 26.5 / 25F71 통일
+- [x] SSH 기반 일괄 시작·중지
+- [x] exo topology 4노드 확인
+- [x] node1↔worker RDMA 링크 확인
+- [x] `Pipeline/MlxRing` 운영 설정
+- [x] OpenAI 및 Claude 호환 API 제공
+- [x] Agentic Local Server 기본 구현과 테스트
+- [ ] 운영용 API 인증/TLS/rate limit
+- [ ] 클러스터 재부팅 후 자동 복구
+- [ ] 모델별 처리량·첫 토큰 지연 벤치마크 기록
+- [ ] worker 장애 및 장시간 부하 테스트
+
+## 13. 참고 자료
+
+- [exo README](../README.md)
+- [exo API 문서](api.md)
+- [Agentic Local Server](agentic-local-server.md)
+- [Anthropic Claude Code LLM gateway](https://docs.anthropic.com/en/docs/claude-code/llm-gateway)

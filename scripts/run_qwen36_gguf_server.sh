@@ -14,7 +14,7 @@ host="${LLAMA_HOST:-0.0.0.0}"
 port="${LLAMA_PORT:-8080}"
 ctx_size="${LLAMA_CTX_SIZE:-32768}"
 gpu_layers="${LLAMA_GPU_LAYERS:-999}"
-reasoning="${LLAMA_REASONING:-off}"
+reasoning="${LLAMA_REASONING:-auto}"
 
 if [[ ! -f "${model_path}" ]]; then
   echo "Missing model file: ${model_path}" >&2

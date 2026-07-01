@@ -14,13 +14,16 @@ api_url="http://${api_host}:${api_port}"
 echo "API: ${api_url}"
 echo
 
-python3 - "${api_url}/state/topology" <<'PY'
+python3 - "${api_url}" <<'PY'
 import json
 import sys
 import urllib.request
 
-with urllib.request.urlopen(sys.argv[1], timeout=10) as response:
+base_url = sys.argv[1]
+with urllib.request.urlopen(f"{base_url}/state/topology", timeout=10) as response:
     topology = json.load(response)
+with urllib.request.urlopen(f"{base_url}/state", timeout=10) as response:
+    state = json.load(response)
 
 nodes = topology.get("nodes") or []
 if isinstance(nodes, dict):
@@ -32,9 +35,11 @@ else:
     ]
     node_ids = [node_id for node_id in node_ids if node_id]
 
+identities = state.get("nodeIdentities") or {}
 print(f"topology_nodes={len(node_ids)}")
 for node_id in node_ids:
-    print(f"- {node_id}")
+    name = (identities.get(node_id) or {}).get("friendlyName") or "unnamed"
+    print(f"- {name}: {node_id}")
 
 connections = topology.get("connections") or {}
 print(f"connection_groups={len(connections)}")

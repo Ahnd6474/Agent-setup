@@ -5,13 +5,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
 Role = Literal["system", "user", "assistant", "tool"]
-Mode = Literal["chat", "coding"]
-RunStatus = Literal["running", "completed", "failed"]
 
 
 def now_iso() -> str:
@@ -26,13 +23,17 @@ def new_id(prefix: str) -> str:
 class Message:
     role: Role
     content: str
+    reasoning: str | None = None
     created_at: str = field(default_factory=now_iso)
+    message_id: str = field(default_factory=lambda: new_id("msg"))
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | None]:
         return {
             "role": self.role,
             "content": self.content,
+            "reasoning": self.reasoning,
             "created_at": self.created_at,
+            "message_id": self.message_id,
         }
 
     @classmethod
@@ -40,7 +41,9 @@ class Message:
         return cls(
             role=data["role"],
             content=data["content"],
+            reasoning=data.get("reasoning"),
             created_at=data.get("created_at", now_iso()),
+            message_id=data.get("message_id", new_id("msg")),
         )
 
 
@@ -84,38 +87,26 @@ class SessionRecord:
 
 
 @dataclass
-class RunRecord:
-    run_id: str
+class ResourceAllocation:
     session_id: str
-    mode: Mode
-    prompt: str
-    source_dir: str | None
-    workspace_dir: str | None
-    status: RunStatus
+    compute_slots: int
+    compute_nodes: list[str]
+    disk_quota_bytes: int
+    memory_message_limit: int
+    memory_char_limit: int
     created_at: str
     updated_at: str
-    target: dict[str, Any]
-    limits: dict[str, Any]
-    sandbox: dict[str, Any]
-    llm_backend: dict[str, Any]
-    error: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "run_id": self.run_id,
             "session_id": self.session_id,
-            "mode": self.mode,
-            "prompt": self.prompt,
-            "source_dir": self.source_dir,
-            "workspace_dir": self.workspace_dir,
-            "status": self.status,
+            "compute_slots": self.compute_slots,
+            "compute_nodes": self.compute_nodes,
+            "disk_quota_bytes": self.disk_quota_bytes,
+            "memory_message_limit": self.memory_message_limit,
+            "memory_char_limit": self.memory_char_limit,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "target": self.target,
-            "limits": self.limits,
-            "sandbox": self.sandbox,
-            "llm_backend": self.llm_backend,
-            "error": self.error,
         }
 
     @classmethod
@@ -123,47 +114,33 @@ class RunRecord:
         cls,
         *,
         session_id: str,
-        mode: Mode,
-        prompt: str,
-        source_dir: Path | None,
-        workspace_dir: Path | None,
-        target: dict[str, Any] | None = None,
-        limits: dict[str, Any] | None = None,
-        sandbox: dict[str, Any] | None = None,
-        llm_backend: dict[str, Any] | None = None,
-    ) -> "RunRecord":
+        compute_slots: int = 1,
+        compute_nodes: list[str] | None = None,
+        disk_quota_bytes: int = 5_000_000_000,
+        memory_message_limit: int = 24,
+        memory_char_limit: int = 48_000,
+    ) -> "ResourceAllocation":
         created_at = now_iso()
         return cls(
-            run_id=new_id("run"),
             session_id=session_id,
-            mode=mode,
-            prompt=prompt,
-            source_dir=str(source_dir) if source_dir else None,
-            workspace_dir=str(workspace_dir) if workspace_dir else None,
-            status="running",
+            compute_slots=compute_slots,
+            compute_nodes=compute_nodes or ["node2", "node3", "node4"],
+            disk_quota_bytes=disk_quota_bytes,
+            memory_message_limit=memory_message_limit,
+            memory_char_limit=memory_char_limit,
             created_at=created_at,
             updated_at=created_at,
-            target=target or {},
-            limits=limits or {},
-            sandbox=sandbox or {},
-            llm_backend=llm_backend or {},
         )
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "RunRecord":
+    def from_dict(cls, data: dict[str, Any]) -> "ResourceAllocation":
         return cls(
-            run_id=data["run_id"],
             session_id=data["session_id"],
-            mode=data["mode"],
-            prompt=data["prompt"],
-            source_dir=data.get("source_dir"),
-            workspace_dir=data.get("workspace_dir"),
-            status=data["status"],
+            compute_slots=int(data["compute_slots"]),
+            compute_nodes=list(data["compute_nodes"]),
+            disk_quota_bytes=int(data["disk_quota_bytes"]),
+            memory_message_limit=int(data["memory_message_limit"]),
+            memory_char_limit=int(data["memory_char_limit"]),
             created_at=data["created_at"],
             updated_at=data["updated_at"],
-            target=data.get("target", {}),
-            limits=data.get("limits", {}),
-            sandbox=data.get("sandbox", {}),
-            llm_backend=data.get("llm_backend", {}),
-            error=data.get("error"),
         )

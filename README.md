@@ -31,7 +31,23 @@ exo connects all your devices into an AI cluster. Not only does exo enable runni
 
 ## Dashboard
 
-exo includes a built-in dashboard for managing your cluster and chatting with models.
+exo's built-in dashboard at `http://localhost:52415` is the **cluster control
+plane**. Use it to monitor topology and node health, download models, choose
+placements, manage instances, and inspect cluster resources. The dashboard does
+not expose an end-user chat surface; API diagnostics use the `52415/v1`
+endpoints directly.
+
+This repository's optional Agentic Local Server at `http://localhost:8765` is
+the **user application**: accounts, persistent chat sessions, memory, and
+session-scoped resources live there. In the four-node deployment, `8765`
+consumes the OpenAI-compatible API exposed by `52415`; it does not replace the
+exo control plane.
+
+| Port | Role | Intended users |
+|---|---|---|
+| `8765` | Agentic user GUI and application API | End users |
+| `52415` | exo monitoring, model/instance management, and inference API | Cluster operators and internal clients |
+| `52416` | exo libp2p node transport | Cluster nodes only |
 
 <p align="center">
   <img src="docs/imgs/dashboard-cluster-view.png" alt="exo dashboard - cluster view showing 4 x M3 Ultra Mac Studio with DeepSeek v3.1 and Kimi-K2-Thinking loaded" width="80%" />
@@ -68,7 +84,9 @@ exo includes a built-in dashboard for managing your cluster and chatting with mo
 
 ## Quick Start
 
-Devices running exo automatically discover each other, without needing any manual configuration. Each device provides an API and a dashboard for interacting with your cluster (runs at `http://localhost:52415`).
+Devices running exo automatically discover each other, without needing any
+manual configuration. Each device provides the cluster control panel and API at
+`http://localhost:52415`.
 
 There are two ways to run exo:
 
@@ -440,8 +458,10 @@ curl -N -X POST http://localhost:52415/v1/messages \
   }'
 ```
 
-Claude Code can be pointed at the same gateway pattern by using exo's Claude-compatible `/v1/messages` endpoint behind a reverse proxy or API gateway.
-For a Korean, step-by-step rollout plan that includes Claude Code integration, see [docs/cluster-plan-ko.md](docs/cluster-plan-ko.md).
+Claude Code can use exo's Claude-compatible `/v1/messages` endpoint by setting
+`ANTHROPIC_BASE_URL` to the exo API root. For the current four-node Mac mini
+configuration, placement constraints, operations, and Agentic Local Server setup,
+see the Korean [cluster operations guide](docs/cluster-plan-ko.md).
 
 ### OpenAI Responses API Compatibility
 
@@ -505,7 +525,7 @@ Custom models requiring `trust_remote_code` in their configuration must be expli
 For further details, see:
 
 - API documentation in [docs/api.md](docs/api.md).
-- API types and endpoints in [src/exo/master/api.py](src/exo/master/api.py).
+- API types and endpoints in [src/exo/api/main.py](src/exo/api/main.py).
 
 ---
 

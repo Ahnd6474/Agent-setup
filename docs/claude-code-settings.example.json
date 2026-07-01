@@ -1,10 +1,10 @@
 {
   "env": {
-    "ANTHROPIC_BASE_URL": "http://10.80.118.167:52415",
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:52415",
     "ANTHROPIC_API_KEY": "x",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "pipenetwork/MiniMax-M3-MLX-4bit",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "pipenetwork/MiniMax-M3-MLX-4bit",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "pipenetwork/MiniMax-M3-MLX-4bit",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "mlx-community/Qwen3.6-35B-A3B-4bit",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "mlx-community/Qwen3.6-35B-A3B-4bit",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "mlx-community/Qwen3.6-35B-A3B-4bit",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   }

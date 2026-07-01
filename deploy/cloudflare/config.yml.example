@@ -1,0 +1,12 @@
+# Copy outside the repository, for example to ~/.cloudflared/config.yml.
+# Replace the placeholders after creating a named Cloudflare Tunnel.
+tunnel: YOUR_TUNNEL_UUID
+credentials-file: /Users/dshs_llm/.cloudflared/YOUR_TUNNEL_UUID.json
+
+ingress:
+  - hostname: agent.example.com
+    service: http://127.0.0.1:8765
+    originRequest:
+      connectTimeout: 10s
+      httpHostHeader: agent.example.com
+  - service: http_status:404

@@ -11,6 +11,8 @@ api_host="${API_HOST:-${MASTER_HOST:-127.0.0.1}}"
 api_port="${API_PORT:-52415}"
 model_id="${MODEL_ID:-pipenetwork/MiniMax-M3-MLX-4bit}"
 min_nodes="${MIN_NODES:-4}"
+sharding="${SHARDING:-Pipeline}"
+instance_meta="${INSTANCE_META:-MlxRing}"
 
 echo "== Local Thunderbolt RDMA interfaces =="
 python3 - <<'PY'
@@ -51,11 +53,10 @@ echo "== exo topology =="
 curl -fsS "http://${api_host}:${api_port}/state/topology" | python3 -m json.tool | sed -n '1,220p'
 
 echo
-echo "== RDMA/JACCL placement check =="
+echo "== Configured placement check (${sharding}/${instance_meta}) =="
 curl -fsS \
-  "http://${api_host}:${api_port}/instance/placement?model_id=${model_id}&sharding=Tensor&instance_meta=MlxJaccl&min_nodes=${min_nodes}" \
+  "http://${api_host}:${api_port}/instance/placement?model_id=${model_id}&sharding=${sharding}&instance_meta=${instance_meta}&min_nodes=${min_nodes}" \
   | python3 -m json.tool | sed -n '1,220p'
 
 echo
 echo "RDMA cluster verification passed."
-

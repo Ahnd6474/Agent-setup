@@ -50,7 +50,8 @@ connection_is_local_host() {
 
 connection_run() {
   local type="" host="" role="" command=""
-  local arg
+  local arg attempt
+  local attempts="${SSH_CONNECTION_ATTEMPTS:-3}"
 
   for arg in "$@"; do
     case "${arg}" in
@@ -92,6 +93,21 @@ connection_run() {
   if connection_is_local_host "${host}"; then
     bash -lc "${command}"
   else
-    ssh -o ConnectTimeout="${SSH_CONNECT_TIMEOUT:-5}" -o StrictHostKeyChecking=accept-new "${host}" "${command}"
+    for attempt in $(seq 1 "${attempts}"); do
+      if ssh \
+        -o BatchMode=yes \
+        -o ConnectTimeout="${SSH_CONNECT_TIMEOUT:-5}" \
+        -o ConnectionAttempts=1 \
+        -o ServerAliveInterval=2 \
+        -o ServerAliveCountMax=2 \
+        -o StrictHostKeyChecking=accept-new \
+        "${host}" "${command}"; then
+        return 0
+      fi
+      if [[ "${attempt}" -lt "${attempts}" ]]; then
+        sleep 1
+      fi
+    done
+    return 1
   fi
 }
