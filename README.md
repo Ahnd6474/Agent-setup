@@ -524,6 +524,8 @@ Custom models requiring `trust_remote_code` in their configuration must be expli
 
 For further details, see:
 
+- Current four-node implementation and verification status in
+  [docs/current-progress-ko.md](docs/current-progress-ko.md).
 - API documentation in [docs/api.md](docs/api.md).
 - API types and endpoints in [src/exo/api/main.py](src/exo/api/main.py).
 

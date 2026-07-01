@@ -8,7 +8,7 @@ from subprocess import CalledProcessError
 from typing import Self, cast
 
 import anyio
-from anyio import fail_after, open_process, to_thread
+from anyio import fail_after, move_on_after, open_process, to_thread
 from anyio.streams.buffered import BufferedByteReceiveStream
 from loguru import logger
 from pydantic import ValidationError
@@ -467,8 +467,10 @@ class InfoGatherer:
     async def _monitor_static_info(self, static_info_poll_interval: float):
         while True:
             try:
-                with fail_after(30):
+                with move_on_after(30) as cancel_scope:
                     await self.info_sender.send(await StaticNodeInformation.gather())
+                if cancel_scope.cancel_called:
+                    logger.warning("Gathering static node info timed out after 30 seconds")
             except Exception as e:
                 logger.opt(exception=e).warning("Error gathering static node info")
             await anyio.sleep(static_info_poll_interval)
@@ -476,8 +478,10 @@ class InfoGatherer:
     async def _monitor_misc(self, misc_poll_interval: float):
         while True:
             try:
-                with fail_after(10):
+                with move_on_after(10) as cancel_scope:
                     await self.info_sender.send(await MiscData.gather())
+                if cancel_scope.cancel_called:
+                    logger.warning("Gathering misc data timed out after 10 seconds")
             except Exception as e:
                 logger.opt(exception=e).warning("Error gathering misc data")
             await anyio.sleep(misc_poll_interval)
@@ -487,10 +491,12 @@ class InfoGatherer:
     ):
         while True:
             try:
-                with fail_after(30):
+                with move_on_after(30) as cancel_scope:
                     iface_map = await _gather_iface_map()
                     if iface_map is None:
                         raise ValueError("Failed to gather interface map")
+                if cancel_scope.cancel_called:
+                    logger.warning("Gathering Thunderbolt data timed out after 30 seconds")
 
                     data = await ThunderboltConnectivity.gather()
                     assert data is not None
