@@ -375,7 +375,52 @@ uv run --package exo-tools agent-server
 `http://127.0.0.1:52415`의 모니터링·관리 패널을 별도로 사용한다. 상세 기능과 제한은
 [`agentic-local-server.md`](agentic-local-server.md)를 참고한다.
 
-## 10. 보안과 운영 기준
+## 10. 요청 단위 llama.cpp 라우팅
+
+대형 모델이 한 worker의 메모리에 들어가는 경우에는 한 요청을 여러 노드로
+분할하지 않고, exo가 독립적인 llama.cpp replica 중 하나를 선택할 수 있다.
+요청은 선택된 replica에서 prefill부터 decode까지 끝나며 node 간 토큰 동기화를
+하지 않는다.
+
+설정 예시는 `scripts/llama-replicas.json.example`이다. replica 개수에는 3개
+제한이 없으며 동일 노드의 서로 다른 포트도 별도 replica로 등록할 수 있다.
+
+```bash
+cp scripts/llama-replicas.json.example scripts/llama-replicas.json
+```
+
+각 worker에서 모델별 llama.cpp 서버를 실행한다.
+
+```bash
+LLAMA_MODEL_PATH=/path/to/model.gguf \
+LLAMA_MODEL_ALIAS=qwen-3.6-35b \
+LLAMA_PORT=8080 \
+LLAMA_PARALLEL=1 \
+scripts/start_llama_replica.sh
+```
+
+준비되지 않은 replica는 JSON에서 제거한 뒤 `scripts/cluster.env`에 다음을
+추가하고 master를 재시작한다.
+
+```bash
+LLAMA_REPLICAS_FILE=/Users/dshs_llm/exo/scripts/llama-replicas.json
+```
+
+라우터는 모델이 일치하고 capacity가 남은 replica 중 부하가 가장 낮은 곳을
+선택한다. 모든 replica가 사용 중이면 요청을 capacity 대기열에 넣고,
+`maximum_queue_size`를 넘으면 HTTP 429, `queue_timeout_seconds`를 넘으면 HTTP
+503을 반환한다. 현재 상태는 다음 관리 API에서 확인한다.
+
+```bash
+curl http://127.0.0.1:52415/v1/llama-router/status
+```
+
+설정에 없는 모델은 기존 exo MLX 인스턴스 경로로 처리된다. 같은 모델의 동시
+슬롯만 늘릴 목적이면 weight를 중복 적재하는 추가 프로세스보다 llama.cpp의
+`--parallel`과 replica의 `max_concurrency`를 같은 값으로 설정하는 편이
+메모리 효율적이다.
+
+## 11. 보안과 운영 기준
 
 - `52415`는 관리면, `52416`은 내부 노드 통신이므로 인터넷에 공개하지 않는다.
 - 사용자 진입점은 `8765` 하나로 제한하고 Cloudflare Tunnel과 Access 뒤에 둔다.
@@ -384,7 +429,7 @@ uv run --package exo-tools agent-server
 - `scripts/cluster.env`와 토큰이 포함된 설정 파일은 커밋하지 않는다.
 - 배포 전 `/state/topology` 응답에 포함된 내부 주소와 노드 식별자 노출 여부를 검토한다.
 
-## 11. 장애 확인 순서
+## 12. 장애 확인 순서
 
 1. `scripts/status_4node_exo_cluster.sh`
 2. `curl http://127.0.0.1:52415/state/topology`
@@ -395,7 +440,7 @@ uv run --package exo-tools agent-server
 7. 모델 파일 존재 여부와 노드별 사용 가능 메모리
 8. `/instance/previews`의 placement error
 
-## 12. 현재 완료 상태
+## 13. 현재 완료 상태
 
 - [x] M4 Pro 64 GiB Mac mini 4대 연결
 - [x] macOS 26.5 / 25F71 통일
@@ -410,7 +455,7 @@ uv run --package exo-tools agent-server
 - [ ] 모델별 처리량·첫 토큰 지연 벤치마크 기록
 - [ ] worker 장애 및 장시간 부하 테스트
 
-## 13. 참고 자료
+## 14. 참고 자료
 
 - [exo README](../README.md)
 - [exo API 문서](api.md)

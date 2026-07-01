@@ -53,6 +53,30 @@ Returns the list of internal events recorded by the master (mainly for debugging
 **Response:**
 Array of event objects.
 
+### Get llama.cpp Router Status
+
+**GET** `/v1/llama-router/status`
+
+Returns whether request-level llama.cpp routing is enabled, the number of
+waiting requests, queue capacity, and per-replica availability/counters.
+
+When routing is disabled:
+
+```json
+{
+  "enabled": false,
+  "waiting_requests": 0,
+  "replicas": []
+}
+```
+
+When enabled, each replica reports its ID, node, supported external model IDs,
+active/max concurrency, completed/failed request counts, and availability.
+Matching `/v1/chat/completions` responses include `X-Exo-Replica`,
+`X-Exo-Node`, and `X-Exo-Queue-Wait-Ms` headers. Queue overflow returns HTTP
+429; capacity wait timeout returns HTTP 503. Both responses include
+`Retry-After: 5`.
+
 ## 2. Model Instance Management
 
 ### Create Instance
@@ -643,6 +667,7 @@ Image file with appropriate content type.
 GET     /node_id
 GET     /state
 GET     /events
+GET     /v1/llama-router/status
 
 # Instance Management
 POST    /instance

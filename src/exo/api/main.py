@@ -15,7 +15,7 @@ import anyio
 from anyio import BrokenResourceError, ClosedResourceError
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from hypercorn.asyncio import serve  # pyright: ignore[reportUnknownVariableType]
 from hypercorn.config import Config
@@ -47,6 +47,11 @@ from exo.api.adapters.responses import (
     responses_request_to_text_generation,
 )
 from exo.api.keepalive import with_sse_keepalive
+from exo.api.llama_router import (
+    LlamaQueueFullError,
+    LlamaQueueTimeoutError,
+    LlamaRequestRouter,
+)
 from exo.api.types import (
     AddCustomModelParams,
     AdvancedImageParams,
@@ -256,6 +261,7 @@ class API:
         self.last_completed_election: int = 0
         self.port = port
         self._sent_image_hashes: set[str] = set()
+        self._llama_router = LlamaRequestRouter.from_env()
 
         self.paused: bool = False
         self.paused_ev: anyio.Event = anyio.Event()
@@ -327,7 +333,11 @@ class API:
                 code=exc.status_code,
             )
         )
-        return JSONResponse(err.model_dump(), status_code=exc.status_code)
+        return JSONResponse(
+            err.model_dump(),
+            status_code=exc.status_code,
+            headers=exc.headers,
+        )
 
     def _setup_cors(self) -> None:
         self.app.add_middleware(
@@ -359,6 +369,7 @@ class API:
         self.app.post("/v1/chat/completions", response_model=None)(
             self.chat_completions
         )
+        self.app.get("/v1/llama-router/status")(self.get_llama_router_status)
         self.app.post("/bench/chat/completions", response_model=None)(
             self.bench_chat_completions
         )
@@ -868,8 +879,26 @@ class API:
 
     async def chat_completions(
         self, payload: ChatCompletionRequest
-    ) -> ChatCompletionResponse | StreamingResponse:
+    ) -> ChatCompletionResponse | Response | StreamingResponse:
         """OpenAI Chat Completions API - adapter."""
+        if self._llama_router is not None and self._llama_router.supports(
+            str(payload.model)
+        ):
+            try:
+                return await self._llama_router.proxy_chat_completion(payload)
+            except LlamaQueueFullError as exc:
+                raise HTTPException(
+                    status_code=429,
+                    detail="llama request queue is full",
+                    headers={"Retry-After": "5"},
+                ) from exc
+            except LlamaQueueTimeoutError as exc:
+                raise HTTPException(
+                    status_code=503,
+                    detail="timed out waiting for llama replica capacity",
+                    headers={"Retry-After": "5"},
+                ) from exc
+
         task_params = await chat_request_to_text_generation(payload)
         resolved_model = await self._resolve_and_validate_text_model(
             ModelId(task_params.model)
@@ -901,6 +930,11 @@ class API:
                 ),
                 media_type="application/json",
             )
+
+    def get_llama_router_status(self) -> dict[str, Any]:
+        if self._llama_router is None:
+            return {"enabled": False, "waiting_requests": 0, "replicas": []}
+        return self._llama_router.status()
 
     async def bench_chat_completions(
         self, payload: BenchChatCompletionRequest

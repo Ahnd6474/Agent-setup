@@ -499,6 +499,23 @@ curl -X POST http://localhost:52415/ollama/api/chat \
 curl http://localhost:52415/ollama/api/tags
 ```
 
+### Request-level llama.cpp replicas
+
+`/v1/chat/completions` can route selected models to independent llama.cpp
+replicas. Each request completes on one replica, avoiding cross-node token
+synchronization. Configure replicas with
+[`scripts/llama-replicas.json.example`](scripts/llama-replicas.json.example)
+and inspect live capacity at:
+
+```bash
+curl http://localhost:52415/v1/llama-router/status
+```
+
+Models not listed in the replica configuration continue through the regular exo
+MLX instance path. See the
+[cluster operations guide](docs/cluster-plan-ko.md#10-요청-단위-llamacpp-라우팅)
+for setup and queue behavior.
+
 ### Custom Model Loading from HuggingFace
 
 You can add custom models from the HuggingFace hub:

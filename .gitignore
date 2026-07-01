@@ -32,6 +32,7 @@ dashboard/.svelte-kit/
 hosts_*.json
 scripts/cluster.env
 scripts/model.env
+scripts/llama-replicas.json
 .swp
 
 # bench files

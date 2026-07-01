@@ -32,6 +32,7 @@ fast_synch="${FAST_SYNCH:-true}"
 skip_warmup="${SKIP_WARMUP:-false}"
 debug_pipeline="${EXO_DEBUG_PIPELINE:-false}"
 node_timeout_seconds="${EXO_NODE_TIMEOUT_SECONDS:-30}"
+llama_replicas_file="${LLAMA_REPLICAS_FILE:-}"
 lock_dir="${TMPDIR:-/tmp}/exo-cluster-start.lock"
 
 acquire_start_lock() {
@@ -209,6 +210,7 @@ PY
 start_master() {
   local session="exo-master"
   local command
+  local llama_router_environment=""
 
   if [[ "${restart}" == "true" ]]; then
     screen_quit "${session}"
@@ -220,7 +222,15 @@ start_master() {
     return 0
   fi
 
-  command="mkdir -p \"\$HOME/.exo\" && cd '${repo_dir}' && EXO_NODE_NAME='${master_node_name}' EXO_LIBP2P_NAMESPACE='${namespace}' EXO_MODELS_DIRS='${models_dir}' EXO_OFFLINE=true EXO_SKIP_WARMUP='${skip_warmup}' EXO_DEBUG_PIPELINE='${debug_pipeline}' EXO_NODE_TIMEOUT_SECONDS='${node_timeout_seconds}' PATH=\"\$HOME/.local/bin:\$PATH\" caffeinate -ims '${exo_bin}' --force-master --offline --no-downloads --api-port '${api_port}' --libp2p-port '${libp2p_port}' '$(fast_synch_flag)'"
+  if [[ -n "${llama_replicas_file}" ]]; then
+    if [[ ! -f "${llama_replicas_file}" ]]; then
+      echo "Missing llama replica config: ${llama_replicas_file}" >&2
+      return 1
+    fi
+    llama_router_environment="EXO_LLAMA_REPLICAS_FILE='${llama_replicas_file}'"
+  fi
+
+  command="mkdir -p \"\$HOME/.exo\" && cd '${repo_dir}' && ${llama_router_environment} EXO_NODE_NAME='${master_node_name}' EXO_LIBP2P_NAMESPACE='${namespace}' EXO_MODELS_DIRS='${models_dir}' EXO_OFFLINE=true EXO_SKIP_WARMUP='${skip_warmup}' EXO_DEBUG_PIPELINE='${debug_pipeline}' EXO_NODE_TIMEOUT_SECONDS='${node_timeout_seconds}' PATH=\"\$HOME/.local/bin:\$PATH\" caffeinate -ims '${exo_bin}' --force-master --offline --no-downloads --api-port '${api_port}' --libp2p-port '${libp2p_port}' '$(fast_synch_flag)'"
 
   echo "Starting master in local screen: ${session}"
   screen -dmS "${session}" bash -lc "${command}"

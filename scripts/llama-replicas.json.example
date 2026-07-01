@@ -1,0 +1,52 @@
+{
+  "maximum_queue_size": 64,
+  "queue_timeout_seconds": 300,
+  "failure_cooldown_seconds": 10,
+  "replicas": [
+    {
+      "id": "node2-qwen-1",
+      "node": "node2",
+      "base_url": "http://10.0.0.2:8080/v1",
+      "models": {
+        "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq": "qwen-3.6-35b"
+      },
+      "max_concurrency": 1
+    },
+    {
+      "id": "node3-qwen-1",
+      "node": "node3",
+      "base_url": "http://10.0.0.3:8080/v1",
+      "models": {
+        "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq": "qwen-3.6-35b"
+      },
+      "max_concurrency": 1
+    },
+    {
+      "id": "node4-qwen-1",
+      "node": "node4",
+      "base_url": "http://10.0.0.4:8080/v1",
+      "models": {
+        "mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq": "qwen-3.6-35b"
+      },
+      "max_concurrency": 1
+    },
+    {
+      "id": "node2-gemma-1",
+      "node": "node2",
+      "base_url": "http://10.0.0.2:8081/v1",
+      "models": {
+        "mlx-community/gemma-4-31b-it-4bit": "gemma-4-31b"
+      },
+      "max_concurrency": 1
+    },
+    {
+      "id": "node3-deepseek-1",
+      "node": "node3",
+      "base_url": "http://10.0.0.3:8082/v1",
+      "models": {
+        "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit": "deepseek-r1-qwen-32b"
+      },
+      "max_concurrency": 1
+    }
+  ]
+}

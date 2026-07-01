@@ -15,6 +15,14 @@
     "num_attention_heads": 40,
     "num_hidden_layers": 64,
     "num_key_value_heads": 8,
+    "quantization": {
+        "group_size": 64,
+        "bits": 4
+    },
+    "quantization_config": {
+        "group_size": 64,
+        "bits": 4
+    },
     "rms_norm_eps": 1e-05,
     "rope_theta": 1000000.0,
     "sliding_window": 131072,

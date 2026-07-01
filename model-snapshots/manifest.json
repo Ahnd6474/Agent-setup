@@ -1,171 +1,87 @@
 {
-  "generated_at": "2026-07-01T07:23:42.793288+00:00",
+  "generated_at": "2026-07-01T08:53:09.090715+00:00",
   "note": "Weights remain in external/local model storage because GitHub LFS has per-file limits.",
   "roots": [
     {
       "source": "/Users/dshs_llm/models",
-      "total_bytes": 126344531186,
-      "file_count": 154,
+      "total_bytes": 79248243726,
+      "file_count": 142,
       "files": [
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/.gitattributes",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/.gitattributes",
           "size_bytes": 1570,
-          "modified_at": "2026-07-01T05:45:38.098785+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "modified_at": "2026-07-01T08:02:25.056270+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/README.md",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/README.md",
           "size_bytes": 992,
-          "modified_at": "2026-07-01T05:45:37.905757+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "modified_at": "2026-07-01T08:02:25.038439+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/config.json",
-          "size_bytes": 715,
-          "modified_at": "2026-07-01T05:45:37.906558+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/config.json",
+          "size_bytes": 868,
+          "modified_at": "2026-07-01T08:02:24.911260+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00001-of-00013.safetensors",
-          "size_bytes": 5174846564,
-          "modified_at": "2026-07-01T05:57:08.052088+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/model-00001-of-00004.safetensors",
+          "size_bytes": 5366582717,
+          "modified_at": "2026-07-01T08:16:49.046535+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00001-of-00013.safetensors.aria2",
-          "size_bytes": 675,
-          "modified_at": "2026-07-01T05:57:08.215850+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": true
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00002-of-00013.safetensors",
-          "size_bytes": 5285039836,
-          "modified_at": "2026-07-01T06:05:11.509592+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/model-00002-of-00004.safetensors",
+          "size_bytes": 5335712972,
+          "modified_at": "2026-07-01T08:10:09.331223+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00003-of-00013.safetensors",
-          "size_bytes": 5159174970,
-          "modified_at": "2026-07-01T06:11:24.699790+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/model-00003-of-00004.safetensors",
+          "size_bytes": 5366641944,
+          "modified_at": "2026-07-01T08:16:46.676816+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00004-of-00013.safetensors",
-          "size_bytes": 5159174991,
-          "modified_at": "2026-07-01T06:09:22.784025+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/model-00004-of-00004.safetensors",
+          "size_bytes": 2362540824,
+          "modified_at": "2026-07-01T08:06:45.940680+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00005-of-00013.safetensors",
-          "size_bytes": 5285039914,
-          "modified_at": "2026-07-01T06:04:27.370904+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/model.safetensors.index.json",
+          "size_bytes": 143017,
+          "modified_at": "2026-07-01T08:06:47.698585+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00006-of-00013.safetensors",
-          "size_bytes": 5159174989,
-          "modified_at": "2026-07-01T06:21:36.701541+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00006-of-00013.safetensors.aria2",
-          "size_bytes": 674,
-          "modified_at": "2026-07-01T06:21:36.784618+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": true
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00007-of-00013.safetensors",
-          "size_bytes": 5159174993,
-          "modified_at": "2026-07-01T06:18:23.792520+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00007-of-00013.safetensors.aria2",
-          "size_bytes": 654,
-          "modified_at": "2026-07-01T06:18:23.933499+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": true
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00008-of-00013.safetensors",
-          "size_bytes": 5285039914,
-          "modified_at": "2026-07-01T06:21:32.103003+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00009-of-00013.safetensors",
-          "size_bytes": 5159174987,
-          "modified_at": "2026-07-01T06:27:06.370231+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00010-of-00013.safetensors",
-          "size_bytes": 5159174997,
-          "modified_at": "2026-07-01T06:29:56.849132+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00011-of-00013.safetensors",
-          "size_bytes": 5285039932,
-          "modified_at": "2026-07-01T06:28:05.971542+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00012-of-00013.safetensors",
-          "size_bytes": 5159174991,
-          "modified_at": "2026-07-01T06:32:59.237617+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model-00013-of-00013.safetensors",
-          "size_bytes": 3098609663,
-          "modified_at": "2026-07-01T06:30:05.093298+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/model.safetensors.index.json",
-          "size_bytes": 66343,
-          "modified_at": "2026-07-01T06:28:06.628747+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
-          "incomplete": false
-        },
-        {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/special_tokens_map.json",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/special_tokens_map.json",
           "size_bytes": 485,
-          "modified_at": "2026-07-01T06:28:07.561520+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "modified_at": "2026-07-01T08:06:48.363904+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/tokenizer.json",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/tokenizer.json",
           "size_bytes": 11422778,
-          "modified_at": "2026-07-01T06:28:10.737342+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "modified_at": "2026-07-01T08:06:50.850622+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
-          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated/tokenizer_config.json",
+          "path": "mlx-community--DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit/tokenizer_config.json",
           "size_bytes": 6754,
-          "modified_at": "2026-07-01T06:28:11.561912+00:00",
-          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated",
+          "modified_at": "2026-07-01T08:06:51.503751+00:00",
+          "repository": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit",
           "incomplete": false
         },
         {
