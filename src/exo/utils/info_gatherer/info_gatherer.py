@@ -470,7 +470,9 @@ class InfoGatherer:
                 with move_on_after(30) as cancel_scope:
                     await self.info_sender.send(await StaticNodeInformation.gather())
                 if cancel_scope.cancel_called:
-                    logger.warning("Gathering static node info timed out after 30 seconds")
+                    logger.warning(
+                        "Gathering static node info timed out after 30 seconds"
+                    )
             except Exception as e:
                 logger.opt(exception=e).warning("Error gathering static node info")
             await anyio.sleep(static_info_poll_interval)
@@ -495,8 +497,6 @@ class InfoGatherer:
                     iface_map = await _gather_iface_map()
                     if iface_map is None:
                         raise ValueError("Failed to gather interface map")
-                if cancel_scope.cancel_called:
-                    logger.warning("Gathering Thunderbolt data timed out after 30 seconds")
 
                     data = await ThunderboltConnectivity.gather()
                     assert data is not None
@@ -510,6 +510,10 @@ class InfoGatherer:
 
                     conns = [it for i in data if (it := i.conn()) is not None]
                     await self.info_sender.send(MacThunderboltConnections(conns=conns))
+                if cancel_scope.cancel_called:
+                    logger.warning(
+                        "Gathering Thunderbolt data timed out after 30 seconds"
+                    )
             except Exception as e:
                 logger.opt(exception=e).warning("Error gathering Thunderbolt data")
             await anyio.sleep(system_profiler_interval)
