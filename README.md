@@ -1,605 +1,123 @@
-<div align="center">
+# 🚀 Agent-setup: 4-Node Mac mini AI Cluster
 
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="/docs/imgs/exo-logo-black-bg.jpg">
-  <img alt="exo logo" src="/docs/imgs/exo-logo-transparent.png" width="50%" height="50%">
-</picture>
-
-exo: Run frontier AI locally. Maintained by [exo labs](https://x.com/exolabs).
-
-<p align="center">
-  <a href="https://discord.gg/TJ4P57arEm" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://x.com/exolabs" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/twitter/follow/exolabs?style=social" alt="X"></a>
-  <a href="https://www.apache.org/licenses/LICENSE-2.0.html" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/License-Apache2.0-blue.svg" alt="License: Apache-2.0"></a>
-</p>
-
-</div>
+This repository contains the deployment configurations, scripts, and documentation for running the 4-node Apple Silicon Mac mini AI cluster using **exo** (distributed inference backend) and **Exodus** (user agent chat application).
 
 ---
 
-exo connects all your devices into an AI cluster. Not only does exo enable running models larger than would fit on a single device, but with [day-0 support for RDMA over Thunderbolt](https://x.com/exolabs/status/2001817749744476256?s=20), makes models run faster as you add more devices.
+## 🇰🇷 빠른 시작 가이드 (Quick Start - Korean)
 
-## Features
+본 클러스터는 4대의 Mac mini를 하나로 묶어 로컬 단독 추론 및 분배 처리를 수행하도록 최적화되어 있습니다.
 
-- **Automatic Device Discovery**: Devices running exo automatically discover each other - no manual configuration.
-- **RDMA over Thunderbolt**: exo ships with [day-0 support for RDMA over Thunderbolt 5](https://x.com/exolabs/status/2001817749744476256?s=20), enabling 99% reduction in latency between devices.
-- **Topology-Aware Auto Parallel**: exo figures out the best way to split your model across all available devices based on a realtime view of your device topology. It takes into account device resources and network latency/bandwidth between each link.
-- **Tensor Parallelism**: exo supports sharding models, for up to 1.8x speedup on 2 devices and 3.2x speedup on 4 devices.
-- **MLX Support**: exo uses [MLX](https://github.com/ml-explore/mlx) as an inference backend and [MLX distributed](https://ml-explore.github.io/mlx/build/html/usage/distributed.html) for distributed communication.
-- **Multiple API Compatibility**: Compatible with OpenAI Chat Completions API, Claude Messages API, OpenAI Responses API, and Ollama API - use your existing tools and clients.
-- **Custom Model Support**: Load custom models from HuggingFace hub to expand the range of available models.
+### 1. 클러스터 구동 순서
+1. **설정 확인:** `scripts/cluster.env` 파일에 네트워크 및 노드 IP가 맞게 지정되어 있는지 확인합니다.
+2. **클러스터 기동:** Master 노드(`node1`) 터미널에서 다음 스크립트를 가동하여 노드 간의 SSH 통신 및 exo 백그라운드 인스턴스를 띄웁니다.
+   ```bash
+   scripts/start_4node_exo_cluster.sh
+   ```
+3. **웹 채팅 서비스(Exodus) 실행:**
+   ```bash
+   scripts/start_agent_server.sh
+   ```
+   이후 브라우저에서 `http://node1:8765`로 접속하여 사용할 수 있습니다.
 
-## Dashboard
+### 2. 주요 문서 링크 (Documentation)
+* 💡 [쉽고 직관적인 사용자 및 운영 매뉴얼 (Markdown)](docs/user-manual-ko.md)
+* 📕 [쉽고 직관적인 사용자 및 운영 매뉴얼 (PDF)](docs/user-manual-ko.pdf)
+* 📑 [4노드 물리 클러스터 운영 상세 계획서](docs/cluster-plan-ko.md)
+* 📝 [현재 런타임 진행 상황 및 검증 보고서](docs/current-progress-ko.md)
 
-exo's built-in dashboard at `http://localhost:52415` is the **cluster control
-plane**. Use it to monitor topology and node health, download models, choose
-placements, manage instances, and inspect cluster resources. The dashboard does
-not expose an end-user chat surface; API diagnostics use the `52415/v1`
-endpoints directly.
+---
 
-This repository's optional Agentic Local Server at `http://localhost:8765` is
-the **user application**: accounts, persistent chat sessions, memory, and
-session-scoped resources live there. In the four-node deployment, `8765`
-consumes the OpenAI-compatible API exposed by `52415`; it does not replace the
-exo control plane.
+## 📐 Cluster Architecture & Ports
 
-| Port | Role | Intended users |
+The architecture separates the **user interaction layer** (Exodus) from the **distributed inference layer** (exo) to maximize memory efficiency and inference speeds.
+
+```
+                    ┌─────────────────────────┐
+                    │      Client Browser     │
+                    │   http://node1:8765     │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │   Exodus User Web App   │
+                    └────────────┬────────────┘
+                                 │ (Internal API call)
+                                 ▼
+                    ┌─────────────────────────┐
+                    │    exo Control Plane    │
+                    │   http://node1:52415    │
+                    └────────────┬────────────┘
+                                 │ (Job Routing)
+         ┌───────────────────────┼───────────────────────┐
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│ node2 (Worker 1) │    │ node3 (Worker 2) │    │ node4 (Worker 3) │
+│  Local Inference │    │  Local Inference │    │  Local Inference │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+```
+
+### Port Allocation Map
+
+| Port | Service | Role / Description |
 |---|---|---|
-| `8765` | Agentic user GUI and application API | End users |
-| `52415` | exo monitoring, model/instance management, and inference API | Cluster operators and internal clients |
-| `52416` | exo libp2p node transport | Cluster nodes only |
-
-<p align="center">
-  <img src="docs/imgs/dashboard-cluster-view.png" alt="exo dashboard - cluster view showing 4 x M3 Ultra Mac Studio with DeepSeek v3.1 and Kimi-K2-Thinking loaded" width="80%" />
-</p>
-<p align="center"><em>4 × 512GB M3 Ultra Mac Studio running DeepSeek v3.1 (8-bit) and Kimi-K2-Thinking (4-bit)</em></p>
-
-## Benchmarks
-
-<details>
-  <summary>Qwen3-235B (8-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA</summary>
-  <img src="docs/benchmarks/jeffgeerling/mac-studio-cluster-ai-full-1-qwen3-235b.jpeg" alt="Benchmark - Qwen3-235B (8-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA" width="80%" />
-  <p>
-    <strong>Source:</strong> <a href="https://www.jeffgeerling.com/blog/2025/15-tb-vram-on-mac-studio-rdma-over-thunderbolt-5">Jeff Geerling: 15 TB VRAM on Mac Studio – RDMA over Thunderbolt 5</a>
-  </p>
-</details>
-
-<details>
-  <summary>DeepSeek v3.1 671B (8-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA</summary>
-  <img src="docs/benchmarks/jeffgeerling/mac-studio-cluster-ai-full-2-deepseek-3.1-671b.jpeg" alt="Benchmark - DeepSeek v3.1 671B (8-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA" width="80%" />
-  <p>
-    <strong>Source:</strong> <a href="https://www.jeffgeerling.com/blog/2025/15-tb-vram-on-mac-studio-rdma-over-thunderbolt-5">Jeff Geerling: 15 TB VRAM on Mac Studio – RDMA over Thunderbolt 5</a>
-  </p>
-</details>
-
-<details>
-  <summary>Kimi K2 Thinking (native 4-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA</summary>
-  <img src="docs/benchmarks/jeffgeerling/mac-studio-cluster-ai-full-3-kimi-k2-thinking.jpeg" alt="Benchmark - Kimi K2 Thinking (native 4-bit) on 4 × M3 Ultra Mac Studio with Tensor Parallel RDMA" width="80%" />
-  <p>
-    <strong>Source:</strong> <a href="https://www.jeffgeerling.com/blog/2025/15-tb-vram-on-mac-studio-rdma-over-thunderbolt-5">Jeff Geerling: 15 TB VRAM on Mac Studio – RDMA over Thunderbolt 5</a>
-  </p>
-</details>
+| **`8765`** | **Exodus Agent App** | User chat UI, session persistence, auth, database, and Python tool sandbox. |
+| **`52415`** | **exo Control Plane** | Cluster monitoring, model downloads, device placement coordinator, and API router. |
+| **`52416`** | **exo Transport** | Internal libp2p node-to-node synchronization and communication. |
+| **`52417`** | **Standalone GGUF Backend** | Fast local `llama-server` loading quantized GGUF models (yielding **58.5+ tps**). |
 
 ---
 
-## Quick Start
+## ⚡ Active Local Models
 
-Devices running exo automatically discover each other, without needing any
-manual configuration. Each device provides the cluster control panel and API at
-`http://localhost:52415`.
+The models are pre-downloaded and verified across all nodes in `/Users/dshs_llm/models` (MLX community models) and `/Users/dshs_llm/llm-models` (GGUF weights).
 
-There are two ways to run exo:
+* **DeepSeek R1 Distill Qwen 32B (4-bit)**
+  * MLX Model: `mlx-community/DeepSeek-R1-Distill-Qwen-32B-abliterated-4bit` (~18.4 GB)
+  * Optimized for highly complex reasoning tasks, running smoothly within memory limits.
+* **Huihui Qwen 3.6 35B (4.4-bit MSQ)**
+  * MLX Model: `mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq` (~21.1 GB)
+* **Qwen 3.6 35B abliterated (Q4_K_M GGUF)**
+  * Local GGUF: Loaded on port `52417` for ultra-fast, uncensored generation.
+* **Gemma 4 31B (4-bit)**
+  * MLX Model: `gemma-4-31b-it-4bit` (~18.4 GB)
+* **Llama 3.2 1B (4-bit)**
+  * MLX Model: `mlx-community/Llama-3.2-1B-Instruct-4bit` (used for fast session-title generation)
 
-### Run from Source (macOS)
+---
 
-If you have [Nix](https://nixos.org/) installed, you can skip most of the steps below and run exo directly:
+## 🚧 Work In Progress Features
 
+Some experimental features are currently under active development. Ensure you check their status in [docs/current-progress-ko.md](docs/current-progress-ko.md) before deployment.
+
+### 1. Google OAuth Account Sync (WIP)
+Google OAuth login flows are currently in development. Standard accounts are created locally via `agent-account bootstrap` or through the `/admin` user-management console.
+
+### 2. Claude Code Integration (WIP)
+Direct backend connection to the terminal coding assistant **Claude Code** is undergoing local testing. If you wish to test it on the cluster, configure your terminal as follows:
 ```bash
-nix run .#exo
+export ANTHROPIC_BASE_URL="http://127.0.0.1:52415"
+export ANTHROPIC_API_KEY="x"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="mlx-community/Huihui-Qwen3.6-35B-A3B-abliterated-4.4bit-msq"
+export API_TIMEOUT_MS=3000000
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+
+claude
 ```
 
-**Note:** To accept the Cachix binary cache (and avoid the Xcode Metal ToolChain), add to `/etc/nix/nix.conf`:
-```
-trusted-users = root    (or your username)
-experimental-features = nix-command flakes
-```
-Then restart the Nix daemon: `sudo launchctl kickstart -k system/org.nixos.nix-daemon`
+---
 
-**Prerequisites:**
-- [Xcode](https://developer.apple.com/xcode/) (provides the Metal ToolChain required for MLX compilation)
-- [brew](https://github.com/Homebrew/brew) (for simple package management on macOS)
+## 🛠️ Cluster Troubleshooting (Q&A)
 
+#### Q. `No instance found for model` error is raised in the browser.
+* **Cause:** The model name requested does not match the active model instance loaded on `52415`.
+* **Resolution:** Re-execute the placement coordinator script:
   ```bash
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  ```
-- [uv](https://github.com/astral-sh/uv) (for Python dependency management)
-- [node](https://github.com/nodejs/node) (for building the dashboard)
-
-  ```bash
-  brew install uv node
-  ```
-- [rust](https://github.com/rust-lang/rustup) (to build Rust bindings, nightly for now)
-
-  ```bash
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  rustup toolchain install nightly
-  ```
-- [macmon](https://github.com/vladkens/macmon) (for hardware monitoring on Apple Silicon)
-
-  Install the pinned fork revision used by this repo instead of Homebrew `macmon`.
-  Homebrew `macmon 0.6.1` still crashes on Apple M5.
-
-  ```bash
-  cargo install --git https://github.com/vladkens/macmon \
-    --rev a1cd06b6cc0d5e61db24fd8832e74cd992097a7d \
-    macmon \
-    --force
+  scripts/place_rdma_instance.sh
   ```
 
-Clone the repo, build the dashboard, and run exo:
-
-```bash
-# Clone exo
-git clone https://github.com/exo-explore/exo
-
-# Build dashboard
-cd exo/dashboard && npm install && npm run build && cd ..
-
-# Run exo
-uv run exo
-```
-
-This starts the exo dashboard and API at http://localhost:52415/
-
-
-*Please view the section on RDMA to enable this feature on MacOS >=26.2!*
-
-
-### Run from Source (Linux)
-
-**Prerequisites:**
-
-- [uv](https://github.com/astral-sh/uv) (for Python dependency management)
-- [node](https://github.com/nodejs/node) (for building the dashboard) - version 18 or higher
-- [rust](https://github.com/rust-lang/rustup) (to build Rust bindings, nightly for now)
-
-**Installation methods:**
-
-**Option 1: Using system package manager (Ubuntu/Debian example):**
-```bash
-# Install Node.js and npm
-sudo apt update
-sudo apt install nodejs npm
-
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install Rust (using rustup)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup toolchain install nightly
-```
-
-**Option 2: Using Homebrew on Linux (if preferred):**
-```bash
-# Install Homebrew on Linux
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Install dependencies
-brew install uv node
-
-# Install Rust (using rustup)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup toolchain install nightly
-```
-
-**Note:** The `macmon` package is macOS-only and not required for Linux.
-
-Clone the repo, build the dashboard, and run exo:
-
-```bash
-# Clone exo
-git clone https://github.com/exo-explore/exo
-
-# Build dashboard
-cd exo/dashboard && npm install && npm run build && cd ..
-
-# Run exo
-uv run exo
-```
-
-This starts the exo dashboard and API at http://localhost:52415/
-
-**Important note for Linux users:** Currently, exo runs on CPU on Linux. GPU support for Linux platforms is under development. If you'd like to see support for your specific Linux hardware, please [search for existing feature requests](https://github.com/exo-explore/exo/issues) or create a new one.
-
-**Configuration Options:**
-
-- `--no-worker`: Run exo without the worker component. Useful for coordinator-only nodes that handle networking and orchestration but don't execute inference tasks. This is helpful for machines without sufficient GPU resources but with good network connectivity.
-
-  ```bash
-  uv run exo --no-worker
-  ```
-
-**File Locations (Linux):**
-
-exo follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) on Linux:
-
-- **Configuration files**: `~/.config/exo/` (or `$XDG_CONFIG_HOME/exo/`)
-- **Data files**: `~/.local/share/exo/` (or `$XDG_DATA_HOME/exo/`)
-- **Cache files**: `~/.cache/exo/` (or `$XDG_CACHE_HOME/exo/`)
-- **Log files**: `~/.cache/exo/exo_log/` (with automatic log rotation)
-- **Custom model cards**: `~/.local/share/exo/custom_model_cards/`
-
-You can override these locations by setting the corresponding XDG environment variables.
-
-### macOS App
-
-exo ships a macOS app that runs in the background on your Mac.
-
-<img src="docs/imgs/macos-app-one-macbook.png" alt="exo macOS App - running on a MacBook" width="35%" />
-
-The macOS app requires macOS Tahoe 26.2 or later.
-
-Download the latest build here: [EXO-latest.dmg](https://assets.exolabs.net/EXO-latest.dmg).
-
-The app will ask for permission to modify system settings and install a new Network profile. Improvements to this are being worked on.
-
-**Custom Namespace for Cluster Isolation:**
-
-The macOS app includes a custom namespace feature that allows you to isolate your exo cluster from others on the same network. This is configured through the `EXO_LIBP2P_NAMESPACE` setting:
-
-- **Use cases**:
-  - Running multiple separate exo clusters on the same network
-  - Isolating development/testing clusters from production clusters
-  - Preventing accidental cluster joining
-
-- **Configuration**: Access this setting in the app's Advanced settings (or set the `EXO_LIBP2P_NAMESPACE` environment variable when running from source)
-
-The namespace is logged on startup for debugging purposes.
-
-#### Uninstalling the macOS App
-
-The recommended way to uninstall is through the app itself: click the menu bar icon → Advanced → Uninstall. This cleanly removes all system components.
-
-If you've already deleted the app, you can run the standalone uninstaller script:
-
-```bash
-sudo ./app/EXO/uninstall-exo.sh
-```
-
-This removes:
-- Network setup LaunchDaemon
-- Network configuration script
-- Log files
-- The "exo" network location
-
-**Note:** You'll need to manually remove EXO from Login Items in System Settings → General → Login Items.
-
----
-
-### Enabling RDMA on macOS
-
-RDMA is a new capability added to macOS 26.2. It works on any Mac with Thunderbolt 5 (M4 Pro Mac Mini, M4 Max Mac Studio, M4 Max MacBook Pro, M3 Ultra Mac Studio).
-
-Please refer to the caveats for immediate troubleshooting.
-
-To enable RDMA on macOS, follow these steps:
-
-1. Shut down your Mac.
-2. Hold down the power button for 10 seconds until the boot menu appears.
-3. Select "Options" to enter Recovery mode.
-4. When the Recovery UI appears, open the Terminal from the Utilities menu.
-5. In the Terminal, type:
-   ```
-   rdma_ctl enable
-   ```
-   and press Enter.
-6. Reboot your Mac.
-
-After that, RDMA will be enabled in macOS and exo will take care of the rest.
-
-**Important Caveats**
-
-1. Devices that wish to be part of an RDMA cluster must be connected to all other devices in the cluster.
-2. The cables must support TB5.
-3. On a Mac Studio, you cannot use the Thunderbolt 5 port next to the Ethernet port.
-4. If running from source, please use the script found at `tmp/set_rdma_network_config.sh`, which will disable Thunderbolt Bridge and set dhcp on each RDMA port.
-5. RDMA ports may be unable to discover each other on different versions of MacOS. Please ensure that OS versions match exactly (even beta version numbers) on all devices.
-
----
-
-## Environment Variables
-
-exo supports several environment variables for configuration:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `EXO_DEFAULT_MODELS_DIR` | Default directory for model downloads and caches. Always first in the writable dirs list. | `~/.local/share/exo/models` (Linux) or `~/.exo/models` (macOS) |
-| `EXO_MODELS_DIRS` | Colon-separated additional writable directories for model downloads. Checked in order after the default; first with enough free space is used. | None |
-| `EXO_MODELS_READ_ONLY_DIRS` | Colon-separated read-only directories to search for pre-downloaded models (e.g., NFS mounts, shared storage). Models here cannot be deleted. | None |
-| `EXO_OFFLINE` | Run without internet connection (uses only local models) | `false` |
-| `EXO_ENABLE_IMAGE_MODELS` | Enable image model support | `false` |
-| `EXO_LIBP2P_NAMESPACE` | Custom namespace for cluster isolation | None |
-| `EXO_FAST_SYNCH` | Control MLX_METAL_FAST_SYNCH behavior (for JACCL backend) | Auto |
-| `EXO_TRACING_ENABLED` | Enable distributed tracing for performance analysis | `false` |
-
-**Example usage:**
-
-```bash
-# Use pre-downloaded models from NFS mount (read-only)
-EXO_MODELS_READ_ONLY_DIRS=/mnt/nfs/models:/opt/ai-models uv run exo
-
-# Download models to an external SSD (falls back to default dir if full)
-EXO_MODELS_DIRS=/Volumes/ExternalSSD/exo-models uv run exo
-
-# Run in offline mode
-EXO_OFFLINE=true uv run exo
-
-# Enable image models
-EXO_ENABLE_IMAGE_MODELS=true uv run exo
-
-# Use custom namespace for cluster isolation
-EXO_LIBP2P_NAMESPACE=my-dev-cluster uv run exo
-```
-
----
-
-### Using the API
-
-exo provides multiple API-compatible interfaces for maximum compatibility with existing tools:
-
-- **OpenAI Chat Completions API** - Compatible with OpenAI clients
-- **Claude Messages API** - Compatible with Anthropic's Claude format
-- **OpenAI Responses API** - Compatible with OpenAI's Responses format
-- **Ollama API** - Compatible with Ollama and tools like OpenWebUI
-
-If you prefer to interact with exo via the API, here is an example creating an instance of a small model (`mlx-community/Llama-3.2-1B-Instruct-4bit`), sending a chat completions request and deleting the instance.
-
----
-
-**1. Preview instance placements**
-
-The `/instance/previews` endpoint will preview all valid placements for your model.
-
-```bash
-curl "http://localhost:52415/instance/previews?model_id=llama-3.2-1b"
-```
-
-Sample response:
-
-```json
-{
-  "previews": [
-    {
-      "model_id": "mlx-community/Llama-3.2-1B-Instruct-4bit",
-      "sharding": "Pipeline",
-      "instance_meta": "MlxRing",
-      "instance": {...},
-      "memory_delta_by_node": {"local": 729808896},
-      "error": null
-    }
-    // ...possibly more placements...
-  ]
-}
-```
-
-This will return all valid placements for this model. Pick a placement that you like.
-To pick the first one, pipe into `jq`:
-
-```bash
-curl "http://localhost:52415/instance/previews?model_id=llama-3.2-1b" | jq -c '.previews[] | select(.error == null) | .instance' | head -n1
-```
-
----
-
-**2. Create a model instance**
-
-Send a POST to `/instance` with your desired placement in the `instance` field (the full payload must match types as in `CreateInstanceParams`), which you can copy from step 1:
-
-```bash
-curl -X POST http://localhost:52415/instance \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "instance": {...}
-  }'
-```
-
-
-Sample response:
-
-```json
-{
-  "message": "Command received.",
-  "command_id": "e9d1a8ab-...."
-}
-```
-
----
-
-**3. Send a chat completion**
-
-Now, make a POST to `/v1/chat/completions` (the same format as OpenAI's API):
-
-```bash
-curl -N -X POST http://localhost:52415/v1/chat/completions \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "mlx-community/Llama-3.2-1B-Instruct-4bit",
-    "messages": [
-      {"role": "user", "content": "What is Llama 3.2 1B?"}
-    ],
-    "stream": true
-  }'
-```
-
----
-
-**4. Delete the instance**
-
-When you're done, delete the instance by its ID (find it via `/state` or `/instance` endpoints):
-
-```bash
-curl -X DELETE http://localhost:52415/instance/YOUR_INSTANCE_ID
-```
-
-### Claude Messages API Compatibility
-
-Use the Claude Messages API format with the `/v1/messages` endpoint:
-
-```bash
-curl -N -X POST http://localhost:52415/v1/messages \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "mlx-community/Llama-3.2-1B-Instruct-4bit",
-    "messages": [
-      {"role": "user", "content": "Hello"}
-    ],
-    "max_tokens": 1024,
-    "stream": true
-  }'
-```
-
-Claude Code can use exo's Claude-compatible `/v1/messages` endpoint by setting
-`ANTHROPIC_BASE_URL` to the exo API root. For the current four-node Mac mini
-configuration, placement constraints, operations, and Agentic Local Server setup,
-see the Korean [cluster operations guide](docs/cluster-plan-ko.md).
-
-### OpenAI Responses API Compatibility
-
-Use the OpenAI Responses API format with the `/v1/responses` endpoint:
-
-```bash
-curl -N -X POST http://localhost:52415/v1/responses \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "mlx-community/Llama-3.2-1B-Instruct-4bit",
-    "messages": [
-      {"role": "user", "content": "Hello"}
-    ],
-    "stream": true
-  }'
-```
-
-### Ollama API Compatibility
-
-exo supports Ollama API endpoints for compatibility with tools like OpenWebUI:
-
-```bash
-# Ollama chat
-curl -X POST http://localhost:52415/ollama/api/chat \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "mlx-community/Llama-3.2-1B-Instruct-4bit",
-    "messages": [
-      {"role": "user", "content": "Hello"}
-    ],
-    "stream": false
-  }'
-
-# List models (Ollama format)
-curl http://localhost:52415/ollama/api/tags
-```
-
-### Request-level llama.cpp replicas
-
-`/v1/chat/completions` can route selected models to independent llama.cpp
-replicas. Each request completes on one replica, avoiding cross-node token
-synchronization. Configure replicas with
-[`scripts/llama-replicas.json.example`](scripts/llama-replicas.json.example)
-and inspect live capacity at:
-
-```bash
-curl http://localhost:52415/v1/llama-router/status
-```
-
-Models not listed in the replica configuration continue through the regular exo
-MLX instance path. See the
-[cluster operations guide](docs/cluster-plan-ko.md#10-요청-단위-llamacpp-라우팅)
-for setup and queue behavior.
-
-### Custom Model Loading from HuggingFace
-
-You can add custom models from the HuggingFace hub:
-
-```bash
-curl -X POST http://localhost:52415/models/add \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model_id": "mlx-community/my-custom-model"
-  }'
-```
-
-**Security Note:**
-
-Custom models requiring `trust_remote_code` in their configuration must be explicitly enabled (default is false) for security. Only enable this if you trust the model's remote code execution. Models are fetched from HuggingFace and stored locally as custom model cards.
-
-**Other useful API endpoints*:**
-
-- List all models: `curl http://localhost:52415/models`
-- List downloaded models only: `curl http://localhost:52415/models?status=downloaded`
-- Search HuggingFace: `curl "http://localhost:52415/models/search?query=llama&limit=10"`
-- Inspect instance IDs and deployment state: `curl http://localhost:52415/state`
-
-For further details, see:
-
-- Current four-node implementation and verification status in
-  [docs/current-progress-ko.md](docs/current-progress-ko.md).
-- API documentation in [docs/api.md](docs/api.md).
-- API types and endpoints in [src/exo/api/main.py](src/exo/api/main.py).
-
----
-
-## Benchmarking
-
-The `exo-bench` tool measures model prefill and token generation speed across different placement configurations. This helps you optimize model performance and validate improvements.
-
-**Prerequisites:**
-- Nodes should be running with `uv run exo` before benchmarking
-- The tool uses the `/bench/chat/completions` endpoint
-
-**Basic usage:**
-
-```bash
-uv run bench/exo_bench.py \
-  --model Llama-3.2-1B-Instruct-4bit \
-  --pp 128,256,512 \
-  --tg 128,256
-```
-
-**Key parameters:**
-
-- `--model`: Model to benchmark (short ID or HuggingFace ID)
-- `--pp`: Prompt size hints (comma-separated integers)
-- `--tg`: Generation lengths (comma-separated integers)
-- `--max-nodes`: Limit placements to N nodes (default: 4)
-- `--instance-meta`: Filter by `ring`, `jaccl`, or `both` (default: both)
-- `--sharding`: Filter by `pipeline`, `tensor`, or `both` (default: both)
-- `--repeat`: Number of repetitions per configuration (default: 1)
-- `--warmup`: Warmup runs per placement (default: 0)
-- `--json-out`: Output file for results (default: bench/results.json)
-
-**Example with filters:**
-
-```bash
-uv run bench/exo_bench.py \
-  --model Llama-3.2-1B-Instruct-4bit \
-  --pp 128,512 \
-  --tg 128 \
-  --max-nodes 2 \
-  --sharding tensor \
-  --repeat 3 \
-  --json-out my-results.json
-```
-
-The tool outputs performance metrics including prompt tokens per second (prompt_tps), generation tokens per second (generation_tps), and peak memory usage for each configuration.
-
----
-
-## Hardware Accelerator Support
-
-On macOS, exo uses the GPU. On Linux, exo currently runs on CPU. We are working on extending hardware accelerator support. If you'd like support for a new hardware platform, please [search for an existing feature request](https://github.com/exo-explore/exo/issues) and add a thumbs up so we know what hardware is important to the community.
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to exo.
+#### Q. Worker nodes are missing in the dashboard.
+* **Cause:** Physical Thunderbolt links are down or SSH handshake timed out.
+* **Resolution:** Change `CONNECT_TYPE=line` to `CONNECT_TYPE=net` in `scripts/cluster.env` to bypass the Thunderbolt interface and use the standard local LAN network. Re-run `scripts/start_4node_exo_cluster.sh`.
