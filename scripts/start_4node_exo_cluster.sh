@@ -18,7 +18,8 @@ master_api_host="${API_HOST:-127.0.0.1}"
 # falls back from line control to the management LAN still needs a reachable
 # bootstrap address or it will run indefinitely without joining the master.
 master_net_address="${MASTER_NET_ADDRESS:-}"
-bootstrap_host="${MASTER_BOOTSTRAP_HOST:-${master_net_address:-10.0.0.1}}"
+master_line_address="${MASTER_LINE_ADDRESS:-10.0.0.1}"
+master_bootstrap_host="${MASTER_BOOTSTRAP_HOST:-}"
 namespace="${NAMESPACE:-macmini-ai-server}"
 master_node_name="${MASTER_NODE_NAME:-node1}"
 repo_dir="${REPO_DIR:-$HOME/exo}"
@@ -57,39 +58,48 @@ acquire_start_lock() {
 
 acquire_start_lock
 
-worker1_host="${WORKER1_HOST:-$(connection_host_for_role worker1 "${connect_type}" 2>/dev/null || true)}"
-worker2_host="${WORKER2_HOST:-$(connection_host_for_role worker2 "${connect_type}" 2>/dev/null || true)}"
-worker3_host="${WORKER3_HOST:-$(connection_host_for_role worker3 "${connect_type}" 2>/dev/null || true)}"
+select_worker_connection() {
+  local role="$1"
+  local requested_type="$2"
+  local line_host=""
+  local net_host=""
+
+  line_host="$(connection_host_for_role "${role}" line 2>/dev/null || true)"
+  net_host="$(connection_host_for_role "${role}" net 2>/dev/null || true)"
+
+  if [[ "${requested_type}" == "line" && -n "${line_host}" ]]; then
+    if SSH_CONNECTION_ATTEMPTS=1 SSH_CONNECT_TIMEOUT="${SSH_PREFLIGHT_TIMEOUT:-${ssh_timeout}}" \
+      connection_run type=line host="${line_host}" command="true" >/dev/null 2>&1; then
+      printf 'line %s\n' "${line_host}"
+      return 0
+    fi
+    echo "Line preflight failed for ${line_host}" >&2
+  fi
+
+  if [[ -n "${net_host}" ]]; then
+    printf 'net %s\n' "${net_host}"
+    return 0
+  fi
+
+  if [[ -n "${line_host}" ]]; then
+    printf 'line %s\n' "${line_host}"
+    return 0
+  fi
+
+  echo "No host configured for ${role}" >&2
+  return 1
+}
+
+read -r worker1_type worker1_host < <(select_worker_connection worker1 "${connect_type}")
+read -r worker2_type worker2_host < <(select_worker_connection worker2 "${connect_type}")
+read -r worker3_type worker3_host < <(select_worker_connection worker3 "${connect_type}")
 
 if [[ -z "${worker1_host}" || -z "${worker2_host}" || -z "${worker3_host}" ]]; then
   echo "Missing worker hosts. Set WORKER*_LINE_HOST or WORKER*_NET_HOST in ${config_file}." >&2
   exit 1
 fi
 
-if [[ "${connect_type}" == "line" ]]; then
-  line_ready=true
-  for host in "${worker1_host}" "${worker2_host}" "${worker3_host}"; do
-    if ! SSH_CONNECTION_ATTEMPTS=1 SSH_CONNECT_TIMEOUT=2 \
-      connection_run type=line host="${host}" command="true" >/dev/null 2>&1; then
-      echo "Line preflight failed for ${host}"
-      line_ready=false
-    fi
-  done
-
-  if [[ "${line_ready}" != "true" ]]; then
-    echo "Line control path is incomplete; using the management network for all workers"
-    connect_type=net
-    worker1_host="$(connection_host_for_role worker1 net 2>/dev/null || true)"
-    worker2_host="$(connection_host_for_role worker2 net 2>/dev/null || true)"
-    worker3_host="$(connection_host_for_role worker3 net 2>/dev/null || true)"
-    if [[ -z "${worker1_host}" || -z "${worker2_host}" || -z "${worker3_host}" ]]; then
-      echo "Line fallback requires WORKER{1,2,3}_NET_HOST" >&2
-      exit 1
-    fi
-  fi
-fi
-
-if [[ "${connect_type}" == "net" && -z "${master_net_address}" && -z "${MASTER_BOOTSTRAP_HOST:-}" ]]; then
+if [[ ( "${worker1_type}" == "net" || "${worker2_type}" == "net" || "${worker3_type}" == "net" ) && -z "${master_net_address}" && -z "${master_bootstrap_host}" ]]; then
   echo "Net control requires MASTER_NET_ADDRESS or MASTER_BOOTSTRAP_HOST" >&2
   exit 1
 fi
@@ -100,7 +110,6 @@ if ! command -v screen >/dev/null 2>&1; then
 fi
 
 api_url="http://${master_api_host}:${api_port}"
-bootstrap_peer="/ip4/${bootstrap_host}/tcp/${libp2p_port}"
 exo_bin="${repo_dir}/.venv/bin/exo"
 
 screen_quit() {
@@ -207,6 +216,30 @@ print(len(nodes if isinstance(nodes, list) else list(nodes)))
 PY
 }
 
+get_master_node_id() {
+  curl -fsS "${api_url}/node_id" 2>/dev/null || true
+}
+
+worker_api_host() {
+  local host="$1"
+  printf '%s\n' "${host#*@}"
+}
+
+bootstrap_peer_for_type() {
+  local type="$1"
+  local host=""
+
+  if [[ -n "${master_bootstrap_host}" ]]; then
+    host="${master_bootstrap_host}"
+  elif [[ "${type}" == "line" ]]; then
+    host="${master_line_address}"
+  else
+    host="${master_net_address}"
+  fi
+
+  printf '/ip4/%s/tcp/%s\n' "${host}" "${libp2p_port}"
+}
+
 start_master() {
   local session="exo-master"
   local command
@@ -240,10 +273,16 @@ start_master() {
 start_worker() {
   local role="$1"
   local host="$2"
+  local worker_connect_type="$3"
   local session="exo-${role}"
   local fallback_host=""
   local node_name=""
+  local master_id=""
+  local remote_id=""
+  local worker_bootstrap_peer=""
   local remote_cleanup_command
+  local remote_node_id_command
+  local remote_identity_reset_command
   local remote_command
 
   screen_quit "${session}"
@@ -256,13 +295,17 @@ start_worker() {
   esac
 
   remote_cleanup_command="if command -v pkill >/dev/null 2>&1; then pkill -TERM -f '${repo_dir}/[.]venv/bin/exo' 2>/dev/null || true; for _ in \$(seq 1 15); do pgrep -f '${repo_dir}/[.]venv/bin/exo' >/dev/null 2>&1 || break; sleep 1; done; pkill -KILL -f '${repo_dir}/[.]venv/bin/exo' 2>/dev/null || true; fi; rm -f \"\$HOME/.exo/exo.pid\""
-  remote_command="mkdir -p \"\$HOME/.exo\"; cd '${repo_dir}' && EXO_NODE_NAME='${node_name}' EXO_LIBP2P_NAMESPACE='${namespace}' EXO_MODELS_DIRS='${models_dir}' EXO_OFFLINE=true EXO_SKIP_WARMUP='${skip_warmup}' EXO_DEBUG_PIPELINE='${debug_pipeline}' EXO_NODE_TIMEOUT_SECONDS='${node_timeout_seconds}' PATH=\"\$HOME/.local/bin:\$PATH\" caffeinate -ims '${exo_bin}' -v --offline --no-downloads --api-port '${api_port}' --libp2p-port '${libp2p_port}' --bootstrap-peers '${bootstrap_peer}' '$(fast_synch_flag)'"
+  remote_node_id_command="'${repo_dir}/.venv/bin/python' -c \"from exo.routing.router import get_node_id_keypair; print(get_node_id_keypair().to_node_id())\""
+  remote_identity_reset_command="mkdir -p \"\$HOME/.exo\"; key=\"\$HOME/.exo/node_id.keypair\"; stamp=\$(date +%Y%m%d%H%M%S); if test -f \"\$key\"; then mv \"\$key\" \"\$key.duplicate-${node_name}-\$stamp\"; fi; if test -f \"\$key.lock\"; then mv \"\$key.lock\" \"\$key.lock.duplicate-${node_name}-\$stamp\"; fi; ${remote_node_id_command}"
+  worker_bootstrap_peer="$(bootstrap_peer_for_type "${worker_connect_type}")"
+  remote_command="mkdir -p \"\$HOME/.exo\"; cd '${repo_dir}' && EXO_NODE_NAME='${node_name}' EXO_LIBP2P_NAMESPACE='${namespace}' EXO_MODELS_DIRS='${models_dir}' EXO_OFFLINE=true EXO_SKIP_WARMUP='${skip_warmup}' EXO_DEBUG_PIPELINE='${debug_pipeline}' EXO_NODE_TIMEOUT_SECONDS='${node_timeout_seconds}' PATH=\"\$HOME/.local/bin:\$PATH\" caffeinate -ims '${exo_bin}' -v --offline --no-downloads --api-port '${api_port}' --libp2p-port '${libp2p_port}' --bootstrap-peers '${worker_bootstrap_peer}' '$(fast_synch_flag)'"
 
-  echo "Starting ${role} via ${host} in local screen: ${session}"
+  echo "Starting ${role} via ${worker_connect_type}:${host} in local screen: ${session}"
+  echo "${role} bootstrap peer: ${worker_bootstrap_peer}"
   # Run cleanup synchronously so failures are visible and a stale worker
   # cannot make the detached replacement exit immediately on a port conflict.
-  if ! connection_run type="${connect_type}" host="${host}" command="${remote_cleanup_command}"; then
-    if [[ "${connect_type}" != "line" ]]; then
+  if ! connection_run type="${worker_connect_type}" host="${host}" command="${remote_cleanup_command}"; then
+    if [[ "${worker_connect_type}" != "line" ]]; then
       return 1
     fi
     fallback_host="$(connection_host_for_role "${role}" net 2>/dev/null || true)"
@@ -271,8 +314,31 @@ start_worker() {
     fi
     echo "${role} line control unavailable; falling back to ${fallback_host}"
     host="${fallback_host}"
+    worker_connect_type="net"
+    worker_bootstrap_peer="$(bootstrap_peer_for_type "${worker_connect_type}")"
+    remote_command="mkdir -p \"\$HOME/.exo\"; cd '${repo_dir}' && EXO_NODE_NAME='${node_name}' EXO_LIBP2P_NAMESPACE='${namespace}' EXO_MODELS_DIRS='${models_dir}' EXO_OFFLINE=true EXO_SKIP_WARMUP='${skip_warmup}' EXO_DEBUG_PIPELINE='${debug_pipeline}' EXO_NODE_TIMEOUT_SECONDS='${node_timeout_seconds}' PATH=\"\$HOME/.local/bin:\$PATH\" caffeinate -ims '${exo_bin}' -v --offline --no-downloads --api-port '${api_port}' --libp2p-port '${libp2p_port}' --bootstrap-peers '${worker_bootstrap_peer}' '$(fast_synch_flag)'"
+    echo "${role} fallback bootstrap peer: ${worker_bootstrap_peer}"
     connection_run type=net host="${host}" command="${remote_cleanup_command}"
   fi
+
+  master_id="$(get_master_node_id)"
+  if [[ -n "${master_id}" ]]; then
+    remote_id="$(connection_run type="${worker_connect_type}" host="${host}" command="${remote_node_id_command}" 2>/dev/null | tail -n 1 || true)"
+    if [[ "${remote_id}" == "${master_id}" ]]; then
+      echo "${role} has the same node id as master (${master_id}); rotating worker keypair"
+      remote_id="$(connection_run type="${worker_connect_type}" host="${host}" command="${remote_identity_reset_command}" 2>/dev/null | tail -n 1 || true)"
+      if [[ -z "${remote_id}" || "${remote_id}" == "${master_id}" ]]; then
+        echo "${role} failed to obtain a unique node id" >&2
+        return 1
+      fi
+      echo "${role} new node id: ${remote_id}"
+    elif [[ -n "${remote_id}" ]]; then
+      echo "${role} node id: ${remote_id}"
+    else
+      echo "${role} node id could not be read before launch; continuing with startup"
+    fi
+  fi
+
   screen -dmS "${session}" ssh -tt \
     -o BatchMode=yes \
     -o ConnectTimeout="${ssh_timeout}" \
@@ -281,20 +347,34 @@ start_worker() {
     -o ServerAliveCountMax=2 \
     -o StrictHostKeyChecking=accept-new \
     "${host}" "${remote_command}"
+
+  for _ in $(seq 1 10); do
+    if curl -fsS "http://$(worker_api_host "${host}"):${api_port}/node_id" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "${role} SSH session started but worker API did not respond yet; waiting for topology join"
 }
 
 echo "Cluster namespace: ${namespace}"
-echo "Control path: requested=${requested_connect_type}, effective=${connect_type}"
+echo "Control path: requested=${requested_connect_type}"
+echo "Worker paths: worker1=${worker1_type}:${worker1_host}, worker2=${worker2_type}:${worker2_host}, worker3=${worker3_type}:${worker3_host}"
 echo "Master API: ${api_url}"
-echo "Bootstrap peer: ${bootstrap_peer}"
+echo "Bootstrap peers: line=$(bootstrap_peer_for_type line), net=$(bootstrap_peer_for_type net)"
 
 start_master
 if [[ "${restart}" != "true" ]] && [[ "$(topology_node_count)" -ge "${min_nodes}" ]]; then
   echo "Cluster already has ${min_nodes} nodes; leaving workers untouched"
 else
-  start_worker worker1 "${worker1_host}"
-  start_worker worker2 "${worker2_host}"
-  start_worker worker3 "${worker3_host}"
+  worker_start_failures=()
+  start_worker worker1 "${worker1_host}" "${worker1_type}" || worker_start_failures+=("worker1")
+  start_worker worker2 "${worker2_host}" "${worker2_type}" || worker_start_failures+=("worker2")
+  start_worker worker3 "${worker3_host}" "${worker3_type}" || worker_start_failures+=("worker3")
+  if [[ "${#worker_start_failures[@]}" -gt 0 ]]; then
+    echo "Workers failed to start: ${worker_start_failures[*]}" >&2
+  fi
 fi
 wait_for_nodes
 

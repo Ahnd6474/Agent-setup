@@ -177,9 +177,15 @@ scripts/start_4node_exo_cluster.sh
 스크립트는 다음 작업을 수행한다.
 
 1. node1에서 `exo-master` screen 세션을 시작한다.
-2. 선택한 SSH 제어 경로로 worker 3대를 시작한다.
-3. 각 worker에 node1의 bootstrap peer를 전달한다.
+2. worker별로 Thunderbolt line SSH를 먼저 검사하고, 실패한 worker만 management
+   network로 fallback한다.
+3. 각 worker에 해당 제어 경로에서 도달 가능한 node1 bootstrap peer를 전달한다.
 4. `/state/topology`에 최소 4개 노드가 나타날 때까지 기다린다.
+
+시작 전 worker의 libp2p node id가 master와 같은지도 검사한다. 같으면 worker의
+`~/.exo/node_id.keypair`를 timestamp가 붙은 백업 파일로 이동하고 새 keypair를
+생성한다. 이 방어 로직은 runtime 복사 과정에서 node1 keypair가 worker로 복제되어
+topology에 node1 하나만 보이는 상황을 막기 위한 것이다.
 
 기존 master까지 재시작하려면:
 

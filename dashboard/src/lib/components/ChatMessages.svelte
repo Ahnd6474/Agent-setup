@@ -177,7 +177,10 @@
   }
 
   function isThinkingExpanded(messageId: string): boolean {
-    return expandedThinkingMessageIds.has(messageId);
+    return (
+      expandedThinkingMessageIds.has(messageId) ||
+      (loading && isLastAssistantMessage(messageId))
+    );
   }
 
   function handleStartEdit(messageId: string, content: string) {

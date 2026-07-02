@@ -1332,8 +1332,13 @@ UI_HTML = r"""<!doctype html>
       const normalized = normalizeAssistantContent(content, reasoning);
       body.innerHTML = "";
       if (normalized.reasoning || normalized.thinkOpen) {
-        const trace = createReasoningTrace(normalized.reasoning || "", pending && normalized.thinkOpen);
-        if (pending && normalized.thinkOpen) trace.summary.textContent = "생각 중...";
+        const trace = createReasoningTrace(
+          normalized.reasoning || "",
+          pending && (Boolean(normalized.reasoning) || normalized.thinkOpen),
+        );
+        if (pending && (normalized.reasoning || normalized.thinkOpen)) {
+          trace.summary.textContent = "생각 중...";
+        }
         body.appendChild(trace.details);
       }
       const answer = document.createElement("div");
